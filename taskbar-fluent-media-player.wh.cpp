@@ -1,59 +1,76 @@
 // ==WindhawkMod==
 // @id              taskbar-fluent-media-player
-// @name            Taskbar Fluent Media Player
-// @description     Taskbar Fluent Media Player — is a Windhawk mod that integrates a modern media player with Fluent Design directly into the Windows 11 taskbar. It allows you to control music and view track information seamlessly without interrupting your workflow.
-// @description:ru-RU Taskbar Fluent Media Player — это мод Windhawk, который интегрирует современный медиаплеер в стиле Fluent Design прямо в панель задач Windows 11. Он позволяет управлять музыкой и просматривать информацию о треке без прерывания работы.
-// @version         1.6.0
-// @author          Salyts
-// @github          https://github.com/Salyts
+// @name            Taskbar Fluent Media Player Lyrics
+// @description     A Windows 11 taskbar media player with genuine word-timed lyrics and full-player mirroring across monitors.
+// @description:ru-RU Медиаплеер для панели задач Windows 11 с реальными временными метками слов и полным плеером на каждом мониторе.
+// @version         1.6.0-full-mirror-v3-lyrics6
+// @author          Salyts, momoca
+// @github          https://github.com/momoca
+// @description:zh-CN Windows 11 任务栏播放器，支持真实逐字歌词和所有显示器上的完整播放器镜像。
 // @include         explorer.exe
-// @compilerOptions -lole32 -loleaut32 -lruntimeobject -luuid -luser32 -lwindowsapp -lshell32 -lgdi32 -lshlwapi -lwindowscodecs -ldwmapi -lshcore -lksuser
+// @compilerOptions -lole32 -loleaut32 -lruntimeobject -luuid -luser32 -lwindowsapp -lshell32 -lgdi32 -lshlwapi -lwindowscodecs -ldwmapi -lshcore -lksuser -lwinhttp -lbcrypt
 // ==/WindhawkMod==
+
 
 // ==WindhawkModReadme==
 /*
-# Taskbar Fluent Media Player 1.6.0
+# Taskbar Fluent Media Player Lyrics
 
-**Taskbar Fluent Media Player —** is a Windhawk mod that embeds a fully functional media player directly into your Windows 11 taskbar. No popups, no separate windows — just your music, always one glance away.
+Fork of Salyts/Taskbar-Fluent-Media-Player, maintained by momoca.
+Source version: 1.6.0-full-mirror-v3-lyrics6.
 
-### [> Russian documentation <](https://github.com/Salyts/Taskbar-Fluent-Media-Player/blob/main/README_RU.md)
+[English](https://github.com/momoca/Taskbar-Fluent-Media-Player-Lyrics/blob/main/README.md) | [简体中文](https://github.com/momoca/Taskbar-Fluent-Media-Player-Lyrics/blob/main/README_CN.md) | [Русский](https://github.com/momoca/Taskbar-Fluent-Media-Player-Lyrics/blob/main/README_RU.md)
 
-### Key Features:
-* **Deep Integration —** Place the player anywhere on the taskbar or tray — left/right of the clock, next to system icons, near the Start button, or overlaid on the taskbar edge. 20+ positions to choose from.
-* **Fluent UI Effects —** Native Windows 11 materials: **Acrylic**, **Mica**, **Mica Alt**, blurred album art background, solid color, and gradient — all with per-theme light/dark color support.
-* **Adaptive Colors —** Every color field accepts a `light$dark` pair. Use the album art dominant color or the system accent color as a value for any element.
-* **Full Media Control —** Play/Pause, Previous, Next, Rewind/Forward 5s, Shuffle, and Repeat. Button order is fully configurable — show only what you need.
-* **Right-Click Context Menu —** Repeat and Shuffle each have their own submenu or single-button toggle mode. All items are optional, reorderable.
-* **Session Switching —** Multiple apps playing at once? Switch between media sessions with a dedicated button, a click, or by scrolling the mouse wheel over the album art — no need to open anything.
-* **Mini Player Popup —** Bind the new "Open player menu" click action to any click type to pop open a compact popup showing album art, title/artist, and Play/Pause, Previous, Next, and Switch Session buttons. Choose in **Player Menu Settings** whether it opens directly above the media player, or at a fixed position on the screen (any corner/edge, with distance offsets and slide-in animation direction — like the Notifications placement mod).
-* **Audio Visualizer —** Real-time spectrum bars (WASAPI loopback + FFT) with 5 shapes (Stereo, Mountain, Mirror, Wave, Breathe), 5 color modes, 6 EQ presets, and full size/position/sensitivity control.
-* **Smart Behavior —** Auto-hides when there is no media, in full-screen, or after a configurable idle timeout. Shows again the moment playback resumes.
+## Full multi-monitor player
 
-### Advanced Customization:
-* **Layout —** Mirror the entire player layout, set min/max width and height, control margins for each element independently.
-* **Backgrounds —** Gradient angle, color balance, acrylic tint opacity, Mica opacity, and blur strength are all tunable. Corner radius can be set per-corner for the player, buttons, and album art.
-* **Text —** Scrolling titles and artist names in Bounce or Loop mode — with adjustable speed, pause duration at edges, and gap between repeats. Full font control: family, size, weight, style, and character spacing. Custom placeholder text for every state (no title, no artist, no session).
-* **Album Art —** Adjustable size, per-corner radius, source app icon overlay with configurable size and position, pause overlay with adjustable opacity. Custom placeholder glyph (any icon font character) with its own font, size, color, and opacity when no art is available.
-* **Buttons —** Icon style (Segoe Fluent Icons or MDL2 Assets, Outline or Filled), size, spacing, corner radius, color, and opacity — all independent from the context menu icons.
-* **Mouse Interactions —** Bind volume control, track seeking, session switching, opening the context menu, and more to scroll wheel, single click, double click, or middle click — configured separately for the album art area and the rest of the player.
+Show a complete player on every available Windows taskbar: album art, title,
+artist, controls, visualization, and lyrics when available. Each display has
+its own UI; playback and settings are shared. Main Settings provides the
+all-monitor switch, primary Monitor selection, missing-anchor fallback and
+secondary horizontal offset. Mirror layout only reverses element order.
 
-| Dark | Light |
-|---|---|
-| ![img](https://i.imgur.com/w9cle3h.png) | ![img](https://i.imgur.com/hlH82zF.png) |
-| ![img](https://i.imgur.com/Ni16pNo.png) | ![img](https://i.imgur.com/ZiZh9gh.png) |
+## Synchronized lyrics
 
-![video](https://i.imgur.com/pGFnmiG.gif)
----
+The separate two-line lyrics area is visible only when enabled and lyrics
+have been retrieved for the current track. Otherwise the whole area is hidden
+and its space released. Width defaults to 260 DIP (80-1200); height and font
+size follow each taskbar. Lines are vertically centered with compact spacing.
 
-### Credits
-* **[Salyts](https://github.com/Salyts) —** Author of Taskbar Fluent Media Player.
-* **[GR0UD](https://github.com/GR0UD) —** Audio visualizer (capture + FFT engine) ported from his Taskbar Media Player.
+Local UTF-8 LRC, plain QRC and YRC are checked first. Online providers are QQ
+Music, NetEase and LRCLIB. QQ QRC, NetEase YRC and enhanced LRC use real word
+timing; ordinary LRC stays line-synchronized without estimated word timing.
+Long lines scroll within the area. Global and per-source offsets are supported.
 
-### Report a Bug
-If you encounter any issues or have a feature suggestion, please open a report on the project's GitHub page:
-👉 **[Report an Issue on GitHub](https://github.com/Salyts/Taskbar-Fluent-Media-Player/issues)**
+## Media sources
+
+QQ, NetEase, KuGou/MoeKoeMusic, Spotify, Apple Music/iTunes, Soda Music,
+foobar2000, browsers and other SMTC players have separate switches, priorities
+and offsets in Media Sources. Accurate metadata and a usable timeline are
+required. NetEase may need inflink-rs; foobar2000 may need foo_mediacontrol.
+These companions are not installed automatically. See the README compatibility
+table for tested and conditional integrations.
+
+## Installation and network use
+
+Use this repository's source to install or update a local Windhawk mod; the
+upstream gallery entry does not install this fork. Enable only one copy of
+this taskbar player. The original mod ID is retained for compatibility.
+
+Online lookup sends song metadata or service track IDs to lyrics providers.
+No player account or user login cookie is read. Disable online retrieval for
+local-only operation. Successful lyrics are cached only in memory.
+
+## Credits
+
+Original player: Salyts; original visualization: GR0UD. Fork additions: momoca.
+Lyrics architecture and QQ reference: ANYNC/TaskbarLyrics. NetEase protocol
+reference: Lyricify Lyrics Helper. Embedded DEFLATE: Mark Adler's puff.
+Upstream MIT and embedded third-party notices are preserved.
+
+[Report fork issues](https://github.com/momoca/Taskbar-Fluent-Media-Player-Lyrics/issues)
 */
 // ==/WindhawkModReadme==
+
 
 // ==WindhawkModSettings==
 /*
@@ -114,6 +131,24 @@ If you encounter any issues or have a feature suggestion, please open a report o
       - "tray_hidden_icons_right": "Трей - Справа от скрытых значков"
       - "tray_after_showdesktop_left": "Трей - Слева от кнопки Показать рабочий стол"
       - "tray_after_showdesktop_right": "Трей - Справа от кнопки Показать рабочий стол"
+    - mirrorAllMonitors: true
+      $name: Show identical full player on all monitors
+      $name:zh-CN: 所有显示器显示完整相同样式播放器
+      $description: Creates an independent fully styled copy of the player on every taskbar. Monitor selects the primary instance.
+    - mirrorMissingAnchor: "start"
+      $name: Secondary taskbar missing anchor fallback
+      $name:zh-CN: 副屏缺少小组件等定位锚点时
+      $description: When a target button is absent on a secondary taskbar, choose a nearby Start-button anchor or a left-edge overlay. This setting does not change explicit edge positions.
+      $options:
+      - "start": "Next to Start button (reserve space)"
+      - "edge": "Taskbar left edge (overlay, no reserved space)"
+      $options:zh-CN:
+      - "start": "定位到开始按钮旁（为播放器预留空间）"
+      - "edge": "定位到副屏任务栏左边缘（覆盖式，不预留空间）"
+    - mirrorSecondaryOffsetX: 0
+      $name: Secondary player horizontal offset (px)
+      $name:zh-CN: 副屏播放器水平偏移（像素）
+      $description: Positive = right, negative = left; only affects secondary displays. Recommended range -300 to 300.
     - monitor: 1
       $name: Monitor
       $name:ru-RU: Монитор
@@ -156,6 +191,7 @@ If you encounter any issues or have a feature suggestion, please open a report o
     $name: Media player
     $name:ru-RU: Медиаплеер
 
+
   - AlbumArtSetting:
     - showAlbumArt: true
       $name: Show album art
@@ -172,7 +208,93 @@ If you encounter any issues or have a feature suggestion, please open a report o
     $name: Album Art
     $name:ru-RU: Обложка альбома
 
+
+  - MediaSourceSetting:
+    - priority: "qq,netease,kugou,spotify,apple,soda,foobar,other,browser"
+      $name: Player priority (comma-separated keys)
+      $name:zh-CN: 播放器优先级（英文代号，逗号分隔）
+      $description: qq,netease,kugou,spotify,apple,soda,foobar,other,browser. Playing sessions take precedence; manual session selection is retained.
+    - qqEnabled: true
+      $name: Enable QQ 音乐
+      $name:zh-CN: 启用 QQ 音乐
+    - qqOffsetMs: 0
+      $name: QQ 音乐 lyric offset (ms)
+      $name:zh-CN: QQ 音乐 歌词偏移（毫秒，正值提前）
+    - neteaseEnabled: true
+      $name: Enable 网易云音乐
+      $name:zh-CN: 启用 网易云音乐
+    - neteaseOffsetMs: 0
+      $name: 网易云音乐 lyric offset (ms)
+      $name:zh-CN: 网易云音乐 歌词偏移（毫秒，正值提前）
+    - kugouEnabled: true
+      $name: Enable 酷狗 / MoeKoeMusic
+      $name:zh-CN: 启用 酷狗 / MoeKoeMusic
+    - kugouOffsetMs: 0
+      $name: 酷狗 / MoeKoeMusic lyric offset (ms)
+      $name:zh-CN: 酷狗 / MoeKoeMusic 歌词偏移（毫秒，正值提前）
+    - spotifyEnabled: true
+      $name: Enable Spotify
+      $name:zh-CN: 启用 Spotify
+    - spotifyOffsetMs: 0
+      $name: Spotify lyric offset (ms)
+      $name:zh-CN: Spotify 歌词偏移（毫秒，正值提前）
+    - appleEnabled: true
+      $name: Enable Apple Music / iTunes
+      $name:zh-CN: 启用 Apple Music / iTunes
+    - appleOffsetMs: 0
+      $name: Apple Music / iTunes lyric offset (ms)
+      $name:zh-CN: Apple Music / iTunes 歌词偏移（毫秒，正值提前）
+    - sodaEnabled: true
+      $name: Enable 汽水音乐
+      $name:zh-CN: 启用 汽水音乐
+    - sodaOffsetMs: 0
+      $name: 汽水音乐 lyric offset (ms)
+      $name:zh-CN: 汽水音乐 歌词偏移（毫秒，正值提前）
+    - foobarEnabled: true
+      $name: Enable foobar2000
+      $name:zh-CN: 启用 foobar2000
+    - foobarOffsetMs: 0
+      $name: foobar2000 lyric offset (ms)
+      $name:zh-CN: foobar2000 歌词偏移（毫秒，正值提前）
+    - otherEnabled: true
+      $name: Enable 其他 SMTC 播放器
+      $name:zh-CN: 启用 其他 SMTC 播放器
+    - otherOffsetMs: 0
+      $name: 其他 SMTC 播放器 lyric offset (ms)
+      $name:zh-CN: 其他 SMTC 播放器 歌词偏移（毫秒，正值提前）
+    - browserEnabled: true
+      $name: Enable 浏览器媒体
+      $name:zh-CN: 启用 浏览器媒体
+    - browserOffsetMs: 0
+      $name: 浏览器媒体 lyric offset (ms)
+      $name:zh-CN: 浏览器媒体 歌词偏移（毫秒，正值提前）
+    $name: Media Sources
+    $name:zh-CN: 播放源
+    $description: Netease may need inflink-rs; foobar2000 needs foo_mediacontrol. Incomplete player timelines cannot be reconstructed reliably.
   - TextAreaSetting:
+    - showLyrics: true
+      $name: Show separate lyrics area
+      $name:zh-CN: 显示独立歌词区域
+      $description: Fixed-width two-line lyrics beside the player. Height follows the taskbar; the artist row is preserved.
+    - lyricsWidth: 260
+      $name: Lyrics area width (DIP)
+      $name:zh-CN: 歌词区域长度（DIP）
+      $description: Fixed width from 80 to 1200; independent of each lyric line's length. Height automatically fits the taskbar.
+    - lyricsWordHighlight: true
+      $name: Highlight real word timing
+      $name:zh-CN: 逐字高亮（仅真实逐字时间）
+      $description: Uses QQ QRC, Netease YRC or local enhanced LRC word timing. Ordinary LRC remains line-synchronized; word timing is never estimated.
+    - onlineLyrics: true
+      $name: Fetch lyrics from QQ Music, Netease and LRCLIB
+      $name:zh-CN: 从 QQ 音乐、网易云及 LRCLIB 在线获取歌词
+      $description: Sends song metadata or supplied service song IDs to QQ Music, Netease and LRCLIB. Local lyrics are checked first.
+    - lyricsFolder: ""
+      $name: Local UTF-8 LRC folder
+      $name:zh-CN: 本地 UTF-8 LRC 歌词目录
+      $description: Looks for Artist - Title.lrc, Title - Artist.lrc, or Title.lrc directly in this folder.
+    - lyricsOffsetMs: 0
+      $name: Lyrics offset (milliseconds)
+      $name:zh-CN: 歌词时间偏移（毫秒，正值提前）
     - showTrackTitle: true
       $name: Show track title
       $name:ru-RU: Отображать название трека
@@ -251,6 +373,7 @@ If you encounter any issues or have a feature suggestion, please open a report o
     $name: Text area
     $name:ru-RU: Текстовая область
 
+
   - MediaButtonsSettings:
     - showMediaButtons: true
       $name: Show media buttons
@@ -293,6 +416,7 @@ If you encounter any issues or have a feature suggestion, please open a report o
       $description:ru-RU: Когда включено, кнопки действий, не поддерживаемых текущей медиа-сессией, полностью скрываются вместо отображения в неактивном состоянии.
     $name: Media Buttons
     $name:ru-RU: Кнопки управления
+
 
   - VisualizerFunctionsSettings:
     - vizEnabled: false
@@ -370,6 +494,7 @@ If you encounter any issues or have a feature suggestion, please open a report o
     $name:ru-RU: Визуализатор
   $name: Main Settings
   $name:ru-RU: Основные настройки
+
 
 - AppearanceSettings:
   - BackgroundStyleSettings:
@@ -470,6 +595,7 @@ If you encounter any issues or have a feature suggestion, please open a report o
     $name: Background Style
     $name:ru-RU: Стиль фона
 
+
   - MediaButtonsStyleSettings:
     - iconStyle: "fluent_outline"
       $name: Icon style
@@ -505,6 +631,7 @@ If you encounter any issues or have a feature suggestion, please open a report o
       $name:ru-RU: Прозрачность иконок для кнопок управления (0-100)
     $name: Media Buttons Style
     $name:ru-RU: Стиль кнопок управления
+
 
   - TitleTextStyleSettings:
     - titleColor: "0 0 0$255 255 255"
@@ -613,6 +740,7 @@ If you encounter any issues or have a feature suggestion, please open a report o
     $name: Title Text Style
     $name:ru-RU: Стиль текста заголовка
 
+
   - ArtistTextStyleSettings:
     - artistColor: "0 0 0$255 255 255"
       $name: Artist color (RGB)
@@ -720,6 +848,7 @@ If you encounter any issues or have a feature suggestion, please open a report o
     $name: Artist Text Style
     $name:ru-RU: Стиль текста исполнителя
 
+
   - AlbumArtDisplaySettings:
     - albumArtEmptyBehavior: "show"
       $name: Album art behavior when no cover available
@@ -807,6 +936,7 @@ If you encounter any issues or have a feature suggestion, please open a report o
     $name: Album Art Display
     $name:ru-RU: Отображение обложки альбома
 
+
   - VisualizerStyleSettings:
     - vizColorMode: "solid"
       $name: Color mode
@@ -839,6 +969,7 @@ If you encounter any issues or have a feature suggestion, please open a report o
   $name: Appearance Settings
   $name:ru-RU: Настройки внешнего вида
 
+
 - PlayerMenuSettings:
   - placementMode: screen
     $name: Placement mode
@@ -851,6 +982,7 @@ If you encounter any issues or have a feature suggestion, please open a report o
     $options:ru-RU:
     - near: Рядом с медиаплеером
     - screen: Расположение на экране
+
 
   - PlayerMenuSettingsNear:
     - miniPlayerHorizontalOffsetNear: 0
@@ -869,6 +1001,7 @@ If you encounter any issues or have a feature suggestion, please open a report o
       - bottom: Снизу
     $name: Near the media player
     $name:ru-RU: Рядом с медиаплеером
+
 
   - PlayerMenuSettingsScreen:
     - miniPlayerHorizontalPlacement: right
@@ -921,6 +1054,7 @@ If you encounter any issues or have a feature suggestion, please open a report o
     $name: Placement on the screen
     $name:ru-RU: Расположение на экране
 
+
   - keepMiniPlayerOpen: false
     $name: Keep mini player menu open
     $name:ru-RU: Не закрывать мини-плеер при клике вне
@@ -931,6 +1065,7 @@ If you encounter any issues or have a feature suggestion, please open a report o
     $description:ru-RU: Не отображать список других медиа сессий/приложений в меню плеера
   $name: Player Menu Settings
   $name:ru-RU: Настройки меню плеера
+
 
 - BehaviorSettings:
   - disableAlbumArtClick: false
@@ -1066,12 +1201,14 @@ If you encounter any issues or have a feature suggestion, please open a report o
   $name: Behavior Settings
   $name:ru-RU: Настройки поведения
 
+
 - AnimationSettings:
   - enableSmoothPositionAnimation: true
     $name: Enable smooth position animation
     $name:ru-RU: Включить плавную анимацию позиции
   $name: Animation Settings media player
   $name:ru-RU: Настройки анимации медиаплеера
+
 
 - NotificationSettings:
   - showSuccessNotification: false
@@ -1081,6 +1218,7 @@ If you encounter any issues or have a feature suggestion, please open a report o
     $description:ru-RU: Отображать уведомление Windows при успешной загрузке или перезагрузке мода
   $name: Notification Settings
   $name:ru-RU: Настройки уведомлений
+
 
 - ContextMenuSettings:
   - contextMenuItems: [switch_sessions, open_app]
@@ -1155,6 +1293,7 @@ If you encounter any issues or have a feature suggestion, please open a report o
   $name: Context Menu Settings
   $name:ru-RU: Настройки контекстного меню
 
+
 - DebugSettings:
   - ignoredProcesses: ""
     $name: Ignore media from processes (separate with ; )
@@ -1178,6 +1317,7 @@ If you encounter any issues or have a feature suggestion, please open a report o
   $name:ru-RU: Настройки отладки
 */
 // ==/WindhawkModSettings==
+
 
 #undef GetCurrentTime
 #include <winrt/base.h>
@@ -1227,12 +1367,93 @@ If you encounter any issues or have a feature suggestion, please open a report o
 #include <mutex>
 #include <string>
 #include <vector>
+#include <list>
 #include <optional>
 #include <set>
 #include <algorithm>
 #include <thread>
 #include <cmath>
 #include <chrono>
+#include <winhttp.h>
+#include <winrt/Windows.Data.Json.h>
+#include <sstream>
+#include <cwctype>
+#include <array>
+#include <bcrypt.h>
+
+enum class PlayerSource { QQ, Netease, Kugou, Spotify, Apple, Soda, Foobar, Other, Browser, Count };
+static constexpr size_t kPlayerSourceCount = (size_t)PlayerSource::Count;
+static constexpr const wchar_t* kPlayerSourceKeys[] = {L"qq",L"netease",L"kugou",L"spotify",L"apple",L"soda",L"foobar",L"other",L"browser"};
+static PlayerSource ClassifyPlayerSource(std::wstring id) {
+    for (auto& c : id) if(c>=L'A' && c<=L'Z') c += L'a'-L'A';
+    auto has=[&](const wchar_t* token){return id.find(token)!=std::wstring::npos;};
+    if(has(L"qqmusic")) return PlayerSource::QQ;
+    if(has(L"cloudmusic")||has(L"netease")||has(L"163music")||has(L"music.163")||has(L"inflink")||has(L"wyy")) return PlayerSource::Netease;
+    if(has(L"kugou")||has(L"moekoe")) return PlayerSource::Kugou;
+    if(has(L"spotify")) return PlayerSource::Spotify;
+    if(has(L"applemusic")||has(L"itunes")) return PlayerSource::Apple;
+    if(has(L"com.soda.music")||has(L"sodamusic")||has(L"汽水")) return PlayerSource::Soda;
+    if(has(L"foobar2000")||has(L"foobar")) return PlayerSource::Foobar;
+    if(has(L"chrome")||has(L"msedge")||has(L"microsoftedge")||has(L"firefox")||has(L"opera")||has(L"brave")||has(L"vivaldi")||has(L"thebrowsercompany.arc")||id==L"arc.exe") return PlayerSource::Browser;
+    return PlayerSource::Other;
+}
+struct PlayerSourceConfig { bool enabled = true; int offsetMs = 0; int priority = 0; };
+static std::mutex g_sourceConfigMtx;
+static std::array<PlayerSourceConfig,kPlayerSourceCount> g_sourceConfigs;
+static PlayerSourceConfig GetSourceConfig(PlayerSource source) {
+    std::lock_guard<std::mutex> lock(g_sourceConfigMtx);
+    return g_sourceConfigs[(size_t)source];
+}
+static std::array<int,kPlayerSourceCount> ParsePlayerPriority(std::wstring order) {
+    std::array<int,kPlayerSourceCount> priorities;
+    priorities.fill(-1);
+    int rank=0;
+    size_t pos=0;
+    while(pos<order.size()) {
+        size_t end=order.find(L',',pos);
+        std::wstring key=order.substr(pos,end==std::wstring::npos?end:end-pos);
+        key.erase(std::remove_if(key.begin(),key.end(),[](wchar_t c){return iswspace(c);}),key.end());
+        for(auto& c:key)if(c>=L'A'&&c<=L'Z')c+=L'a'-L'A';
+        for(size_t i=0;i<kPlayerSourceCount;++i) if(key==kPlayerSourceKeys[i]&&priorities[i]<0) priorities[i]=rank++;
+        if(end==std::wstring::npos) break;
+        pos=end+1;
+    }
+    for(auto& priority:priorities)if(priority<0)priority=rank++;
+    return priorities;
+}
+struct PlayerTimelineSmoother {
+    std::wstring identity;
+    bool initialized=false, wasPlaying=false;
+    int64_t lastRaw=0, lastUpdated=0;
+    uint64_t sampledAt=0;
+    double position=0, previousRate=1;
+    double Select(PlayerSource source,const std::wstring& track,int64_t raw,int64_t updated,
+                  int64_t wallNow,uint64_t now,bool playing,double rate) {
+        rate=std::isfinite(rate)?std::clamp(rate,0.0,4.0):1.0;
+        int64_t age=wallNow-updated;
+        bool usable=updated>0 && age>=0 && age<86400000;
+        if(source!=PlayerSource::Apple) { initialized=false; return std::max(0.0,raw+(playing&&usable?age*rate:0)); }
+        bool reset=!initialized||identity!=track;
+        double projected=position+(wasPlaying?(now-sampledAt)*previousRate:0);
+        if(reset) projected=raw+(playing&&usable&&age<=1000?age*rate:0);
+        else if(updated>lastUpdated) {
+            double error=raw-projected;
+            // Ignore timestamp-only updates of Apple's whole-second position.
+            if((raw!=lastRaw && (raw<lastRaw||std::abs(error)>2000)) ||
+               (playing!=wasPlaying && std::abs(error)>1000)) projected=raw;
+        }
+        position=std::max(0.0,projected); identity=track; initialized=true;
+        lastRaw=raw; lastUpdated=updated; sampledAt=now; wasPlaying=playing; previousRate=rate;
+        return position;
+    }
+};
+// Separate snapshots keep the lyrics worker independent of UI settings reloads.
+static std::atomic<bool> g_lyricsEnabled{true}, g_lyricsOnline{true};
+static std::atomic<int> g_lyricsOffsetMs{0};
+static int g_lyricsWidth = 260;
+static bool g_lyricsWordHighlight = true;
+static std::mutex g_lyricsMtx;
+static std::wstring g_lyricsFolder, g_lyricTitle, g_lyricArtist, g_lyricApp, g_lyricText;
 using namespace winrt::Windows::UI::Xaml;
 using namespace winrt::Windows::UI::Xaml::Controls;
 using namespace winrt::Windows::UI::Xaml::Media;
@@ -1247,6 +1468,9 @@ enum class VizEQ { Default, Bass, Rock, Pop, Jazz, Electronic };
 enum class VizAnchor { Top, Middle, Bottom };
 struct ModSettings {
     int          monitor              = 1;
+    bool         mirrorAllMonitors    = true;
+    std::wstring mirrorMissingAnchor = L"start";
+    int          mirrorSecondaryOffsetX = 0;
     std::wstring position             = L"tray_left";
     std::wstring albumArtLeftClick    = L"none";
     std::wstring albumArtRightClick   = L"none";
@@ -1474,6 +1698,32 @@ static std::wstring MapFontName(const std::wstring& key) {
     return L"Segoe UI Variable Display";
 }
 static void LoadSettings() {
+    {
+        PCWSTR order = Wh_GetStringSetting(L"MainSettings.MediaSourceSetting.priority");
+        auto priorities = ParsePlayerPriority(order ? order : L"");
+        Wh_FreeStringSetting(order);
+        std::lock_guard<std::mutex> lock(g_sourceConfigMtx);
+        for (size_t i=0;i<kPlayerSourceCount;++i) {
+            std::wstring prefix=L"MainSettings.MediaSourceSetting." + std::wstring(kPlayerSourceKeys[i]);
+            g_sourceConfigs[i] = {
+                Wh_GetIntSetting((prefix+L"Enabled").c_str()) != 0,
+                std::clamp(Wh_GetIntSetting((prefix+L"OffsetMs").c_str()),-10000,10000),
+                priorities[i]};
+        }
+    }
+    g_lyricsEnabled = Wh_GetIntSetting(L"MainSettings.TextAreaSetting.showLyrics") != 0;
+    g_lyricsOnline = Wh_GetIntSetting(L"MainSettings.TextAreaSetting.onlineLyrics") != 0;
+    g_lyricsOffsetMs = std::clamp(Wh_GetIntSetting(L"MainSettings.TextAreaSetting.lyricsOffsetMs"), -10000, 10000);
+    int lyricsWidth = Wh_GetIntSetting(L"MainSettings.TextAreaSetting.lyricsWidth");
+    g_lyricsWidth = lyricsWidth == 0 ? 260 : std::clamp(lyricsWidth, 80, 1200);
+    g_lyricsWordHighlight = Wh_GetIntSetting(L"MainSettings.TextAreaSetting.lyricsWordHighlight") != 0;
+    {
+        PCWSTR folder = Wh_GetStringSetting(L"MainSettings.TextAreaSetting.lyricsFolder");
+        std::lock_guard<std::mutex> lock(g_lyricsMtx);
+        g_lyricsFolder = folder ? folder : L"";
+        Wh_FreeStringSetting(folder);
+        g_lyricText.clear();
+    }
     auto Str = [](const wchar_t* key, const wchar_t* def) -> std::wstring {
         PCWSTR p = Wh_GetStringSetting(key);
         std::wstring r = (*p != L'\0') ? p : def;
@@ -1556,6 +1806,12 @@ static void LoadSettings() {
         return L"auto";
     };
     g_settings.monitor               = std::max(1, Wh_GetIntSetting(L"MainSettings.PlayerSetting.monitor"));
+    g_settings.mirrorAllMonitors      = Wh_GetIntSetting(L"MainSettings.PlayerSetting.mirrorAllMonitors") != 0;
+    g_settings.mirrorMissingAnchor = Str(L"MainSettings.PlayerSetting.mirrorMissingAnchor", L"start");
+    if (g_settings.mirrorMissingAnchor != L"start" && g_settings.mirrorMissingAnchor != L"edge")
+        g_settings.mirrorMissingAnchor = L"start";
+    g_settings.mirrorSecondaryOffsetX = std::clamp(
+        Wh_GetIntSetting(L"MainSettings.PlayerSetting.mirrorSecondaryOffsetX"), -500, 500);
     g_settings.position             = Str(L"MainSettings.PlayerSetting.position",    L"tray_left");
     ParseMargin(L"MainSettings.PlayerSetting.playerMargin", L"4 4", g_settings.playerMarginLeft, g_settings.playerMarginRight);
     ParseMargin(L"MainSettings.PlayerSetting.playerWidth", L"0 0", g_settings.playerMinWidth, g_settings.playerMaxWidth);
@@ -1885,10 +2141,12 @@ struct MiniSessionInfo;
 static void AnimateSessionPill(winrt::Windows::UI::Xaml::Shapes::Rectangle const& pill, bool isCurrent, bool animate);
 static winrt::Windows::UI::Xaml::Controls::Button BuildSessionRowButton(const MiniSessionInfo& info, bool isCurrent, HWND taskbarWnd, int rowIndex);
 
+
 static void ApplySettings();
 static std::atomic<bool> g_unloading{false};
 static std::atomic<bool> g_applyingSettings{false};
 static HWND g_taskbarWnd = nullptr;
+
 
 static std::atomic<int> g_activeWorkerThreads{0};
 template <typename F>
@@ -1901,6 +2159,7 @@ static void SpawnTrackedWorker(F&& fn) {
         f();
     }).detach();
 }
+
 
 static void WaitForTrackedWorkers() {
     static constexpr DWORD kTimeoutMs = 2000;
@@ -1925,6 +2184,7 @@ static void WaitForTrackedWorkers() {
         }
     }
 }
+
 
 static std::atomic<bool> g_miniPlayerFlyoutOpen{false};
 static int    g_miniPlayerAnimAxis = 0;
@@ -1955,6 +2215,7 @@ static void ShowSuccessNotification() {
         );
     }).detach();
 }
+
 
 [[clang::no_destroy]] static FrameworkElement g_trackedElement = nullptr;
 static Thickness g_trackedElementOriginalMargin{};
@@ -2189,6 +2450,7 @@ static Border GetButtonTemplateRoot(Button const& btn) {
     return nullptr;
 }
 
+
 [[clang::no_destroy]] static Style g_fluentMediaButtonStyle = nullptr;
 static Style GetFluentMediaButtonStyle() {
     if (!g_fluentMediaButtonStyle) {
@@ -2262,6 +2524,7 @@ static void ApplyFluentMediaButtonStyle(Button const& btn) {
     }
 }
 
+
 static VisualState FindCommonState(Border const& root, std::wstring const& stateName) {
     if (!root) return nullptr;
     try {
@@ -2276,6 +2539,7 @@ static VisualState FindCommonState(Border const& root, std::wstring const& state
     } catch (...) {}
     return nullptr;
 }
+
 
 static void SetStateBrush(Border const& root, std::wstring const& stateName, uint32_t setterIndex, Brush const& value) {
     if (!root) return;
@@ -2367,6 +2631,7 @@ static void RunWhenButtonReady(Button const& btn, std::function<void()> const& a
         invoke();
     }
 }
+
 
 static void SetupMediaButtonCommonStates(Button const& btn) {
     auto transparent = MakeBrush({0x00, 0xFF, 0xFF, 0xFF});
@@ -2997,6 +3262,7 @@ static void ResetScrollState(TextScrollState& s);
 static void FetchMediaPropertiesAsync();
 static void FetchPlaybackInfoAsync();
 static void OnSessionsChanged();
+static bool IsIgnoredMediaApp(const std::wstring& appUserModelId);
 static void AttachToSession(GlobalSystemMediaTransportControlsSession session);
 static void SwitchMediaSession();
 static void SwitchMediaSession() {
@@ -3025,8 +3291,12 @@ static void SwitchMediaSession() {
                 }
             }
         }
-        int nextIndex = (currentIndex + 1) % count;
-        nextSession = sessions.GetAt(nextIndex);
+        for (int step=1; step<=count; ++step) {
+            auto candidate = sessions.GetAt((currentIndex + step) % count);
+            if (candidate && !IsIgnoredMediaApp(std::wstring(candidate.SourceAppUserModelId()))) {
+                nextSession = candidate; break;
+            }
+        }
     } catch (...) { return; }
     if (nextSession) {
         AttachToSession(nextSession);
@@ -3312,6 +3582,7 @@ static std::wstring TrimCopy(std::wstring value) {
     return value.substr(first, last - first + 1);
 }
 static bool IsIgnoredMediaApp(const std::wstring& appUserModelId) {
+    if (!GetSourceConfig(ClassifyPlayerSource(appUserModelId)).enabled) return true;
     if (g_settings.ignoredProcesses.empty() || appUserModelId.empty()) return false;
     std::wstring appLower = ToLowerCopy(appUserModelId);
     std::wstring appStemLower = ToLowerCopy(PathFileStem(appUserModelId));
@@ -3683,6 +3954,7 @@ static void FetchMediaPropertiesAsync() {
                     } catch (...) { thumbBytes.clear(); thumbStreamSize = 0; }
                 }
 
+
                 {
                     bool isBrowserSession = IsBrowserAumid(aumid);
                     std::wstring titleArtistKey =
@@ -3694,6 +3966,7 @@ static void FetchMediaPropertiesAsync() {
                         uint64_t prevArtSize  = g_media.thumbnailStreamSize;
                         uint64_t prevArtHash  = g_media.thumbnailHash;
                         g_lastTitleArtistKey = titleArtistKey;
+
 
                         if (g_artNewBrowserSession) {
                             if (thumbStreamSize > 0) {
@@ -3709,6 +3982,7 @@ static void FetchMediaPropertiesAsync() {
                             g_artDelayPending = isBrowserSession && prevArtSize > 0;
                         }
 
+
                         if (!suspectMatch && g_artDelayPending && isBrowserSession) {
                             bool matchesSuspect = thumbStreamSize > 0 &&
                                                   thumbStreamSize == g_suspectArtSize &&
@@ -3719,6 +3993,7 @@ static void FetchMediaPropertiesAsync() {
                                 g_artDelayPending = false;
                             }
                         }
+
 
                         if (!suspectMatch && isBrowserSession &&
                             thumbStreamSize == 0 && prevArtSize > 0) {
@@ -3894,6 +4169,7 @@ static GlobalSystemMediaTransportControlsSession PickBestSession() {
         }
         GlobalSystemMediaTransportControlsSession playingFirst{nullptr};
         GlobalSystemMediaTransportControlsSession firstValid{nullptr};
+        int playingPriority = 1000, firstPriority = 1000, currentPriority = 1000;
         bool currentExists  = false;
         bool currentPlaying = false;
         for (auto const& s : sessions) {
@@ -3905,13 +4181,16 @@ static GlobalSystemMediaTransportControlsSession PickBestSession() {
                 if (!pb) continue;
                 auto status = pb.PlaybackStatus();
                 bool isPlaying = (status == S::Playing);
-                if (!firstValid) firstValid = s;
+                int priority = GetSourceConfig(ClassifyPlayerSource(appId)).priority;
+                if (priority < firstPriority) { firstValid = s; firstPriority = priority; }
                 if (s == current) {
                     currentExists  = true;
                     currentPlaying = isPlaying;
+                    currentPriority = priority;
                 }
-                if (isPlaying && !playingFirst) {
+                if (isPlaying && priority < playingPriority) {
                     playingFirst = s;
+                    playingPriority = priority;
                 }
             } catch (...) {}
         }
@@ -3927,7 +4206,7 @@ static GlobalSystemMediaTransportControlsSession PickBestSession() {
             }
             return firstValid;
         }
-        if (currentExists && currentPlaying) {
+        if (currentExists && currentPlaying && currentPriority <= playingPriority) {
             return current;
         }
         if (playingFirst && playingFirst != current) {
@@ -4024,7 +4303,11 @@ static void OnSessionsChanged() {
         }
         if (mgr) {
             auto sessions = mgr.GetSessions();
-            g_sessionCount.store((int)sessions.Size());
+            int count = 0;
+            for (auto const& candidate : sessions) {
+                try { if (candidate && !IsIgnoredMediaApp(std::wstring(candidate.SourceAppUserModelId()))) ++count; } catch (...) {}
+            }
+            g_sessionCount.store(count);
         }
     } catch (...) {}
     if (forceRefresh) {
@@ -4062,7 +4345,15 @@ static DWORD WINAPI MediaThreadProc(void*) {
                 OnSessionsChanged();
             }
         }
-        WaitForSingleObject(g_mediaStopEvent, INFINITE);
+        // Detect playback/priority changes even when a player does not notify the manager.
+        while (WaitForSingleObject(g_mediaStopEvent, 2000) == WAIT_TIMEOUT) {
+            if (g_unloading) break;
+            if (g_applyingSettings) continue;
+            auto best = PickBestSession();
+            bool changed;
+            { std::lock_guard<std::mutex> lock(g_sessionMtx); changed = best != g_currentSession; }
+            if (changed) AttachToSession(best);
+        }
         try { if (g_evSessionsChanged.value) g_sessionMgr.SessionsChanged(g_evSessionsChanged); } catch (...) { Wh_Log(L"MediaThreadProc: Failed to unregister SessionsChanged event"); }
         try { if (g_evCurrentChanged.value)  g_sessionMgr.CurrentSessionChanged(g_evCurrentChanged); } catch (...) { Wh_Log(L"MediaThreadProc: Failed to unregister CurrentSessionChanged event"); }
         DetachCurrentSession();
@@ -4077,14 +4368,1646 @@ static DWORD WINAPI MediaThreadProc(void*) {
     }
     return 0;
 }
+// QQ QRC cipher port adapted from ANYNC/TaskbarLyrics (MIT), Copyright (c) 2026 anync.
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+// of the Software, and to permit persons to whom the Software is furnished to do
+// so, subject to the following conditions:
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#include <setjmp.h>
+namespace QqQrc {
+/* puff.h
+  Copyright (C) 2002-2013 Mark Adler, all rights reserved
+  version 2.3, 21 Jan 2013
+
+  This software is provided 'as-is', without any express or implied
+  warranty.  In no event will the author be held liable for any damages
+  arising from the use of this software.
+
+  Permission is granted to anyone to use this software for any purpose,
+  including commercial applications, and to alter it and redistribute it
+  freely, subject to the following restrictions:
+
+  1. The origin of this software must not be misrepresented; you must not
+     claim that you wrote the original software. If you use this software
+     in a product, an acknowledgment in the product documentation would be
+     appreciated but is not required.
+  2. Altered source versions must be plainly marked as such, and must not be
+     misrepresented as being the original software.
+  3. This notice may not be removed or altered from any source distribution.
+
+  Mark Adler    madler@alumni.caltech.edu
+ */
+
+
+/*
+ * See puff.c for purpose and usage.
+ */
+#ifndef NIL
+#  define NIL ((unsigned char *)0)      /* for no output option */
+#endif
+
+int puff(unsigned char *dest,           /* pointer to destination pointer */
+         unsigned long *destlen,        /* amount of output space */
+         const unsigned char *source,   /* pointer to source data pointer */
+         unsigned long *sourcelen);     /* amount of input available */
+
+/*
+ * puff.c
+ * Copyright (C) 2002-2013 Mark Adler
+ * For conditions of distribution and use, see copyright notice in puff.h
+ * version 2.3, 21 Jan 2013
+ *
+ * puff.c is a simple inflate written to be an unambiguous way to specify the
+ * deflate format.  It is not written for speed but rather simplicity.  As a
+ * side benefit, this code might actually be useful when small code is more
+ * important than speed, such as bootstrap applications.  For typical deflate
+ * data, zlib's inflate() is about four times as fast as puff().  zlib's
+ * inflate compiles to around 20K on my machine, whereas puff.c compiles to
+ * around 4K on my machine (a PowerPC using GNU cc).  If the faster decode()
+ * function here is used, then puff() is only twice as slow as zlib's
+ * inflate().
+ *
+ * All dynamically allocated memory comes from the stack.  The stack required
+ * is less than 2K bytes.  This code is compatible with 16-bit int's and
+ * assumes that long's are at least 32 bits.  puff.c uses the short data type,
+ * assumed to be 16 bits, for arrays in order to conserve memory.  The code
+ * works whether integers are stored big endian or little endian.
+ *
+ * In the comments below are "Format notes" that describe the inflate process
+ * and document some of the less obvious aspects of the format.  This source
+ * code is meant to supplement RFC 1951, which formally describes the deflate
+ * format:
+ *
+ *    https://datatracker.ietf.org/doc/html/rfc1951
+ */
+
+/*
+ * Change history:
+ *
+ * 1.0  10 Feb 2002     - First version
+ * 1.1  17 Feb 2002     - Clarifications of some comments and notes
+ *                      - Update puff() dest and source pointers on negative
+ *                        errors to facilitate debugging deflators
+ *                      - Remove longest from struct huffman -- not needed
+ *                      - Simplify offs[] index in construct()
+ *                      - Add input size and checking, using longjmp() to
+ *                        maintain easy readability
+ *                      - Use short data type for large arrays
+ *                      - Use pointers instead of long to specify source and
+ *                        destination sizes to avoid arbitrary 4 GB limits
+ * 1.2  17 Mar 2002     - Add faster version of decode(), doubles speed (!),
+ *                        but leave simple version for readability
+ *                      - Make sure invalid distances detected if pointers
+ *                        are 16 bits
+ *                      - Fix fixed codes table error
+ *                      - Provide a scanning mode for determining size of
+ *                        uncompressed data
+ * 1.3  20 Mar 2002     - Go back to lengths for puff() parameters [Gailly]
+ *                      - Add a puff.h file for the interface
+ *                      - Add braces in puff() for else do [Gailly]
+ *                      - Use indexes instead of pointers for readability
+ * 1.4  31 Mar 2002     - Simplify construct() code set check
+ *                      - Fix some comments
+ *                      - Add FIXLCODES #define
+ * 1.5   6 Apr 2002     - Minor comment fixes
+ * 1.6   7 Aug 2002     - Minor format changes
+ * 1.7   3 Mar 2003     - Added test code for distribution
+ *                      - Added zlib-like license
+ * 1.8   9 Jan 2004     - Added some comments on no distance codes case
+ * 1.9  21 Feb 2008     - Fix bug on 16-bit integer architectures [Pohland]
+ *                      - Catch missing end-of-block symbol error
+ * 2.0  25 Jul 2008     - Add #define to permit distance too far back
+ *                      - Add option in TEST code for puff to write the data
+ *                      - Add option in TEST code to skip input bytes
+ *                      - Allow TEST code to read from piped stdin
+ * 2.1   4 Apr 2010     - Avoid variable initialization for happier compilers
+ *                      - Avoid unsigned comparisons for even happier compilers
+ * 2.2  25 Apr 2010     - Fix bug in variable initializations [Oberhumer]
+ *                      - Add const where appropriate [Oberhumer]
+ *                      - Split if's and ?'s for coverage testing
+ *                      - Break out test code to separate file
+ *                      - Move NIL to puff.h
+ *                      - Allow incomplete code only if single code length is 1
+ *                      - Add full code coverage test to Makefile
+ * 2.3  21 Jan 2013     - Check for invalid code length codes in dynamic blocks
+ */
+
+// setjmp.h is included outside the namespace.             /* for setjmp(), longjmp(), and jmp_buf */
+// puff.h is embedded above.               /* prototype for puff() */
+
+#define local static            /* for local function definitions */
+
+/*
+ * Maximums for allocations and loops.  It is not useful to change these --
+ * they are fixed by the deflate format.
+ */
+#define MAXBITS 15              /* maximum bits in a code */
+#define MAXLCODES 286           /* maximum number of literal/length codes */
+#define MAXDCODES 30            /* maximum number of distance codes */
+#define MAXCODES (MAXLCODES+MAXDCODES)  /* maximum codes lengths to read */
+#define FIXLCODES 288           /* number of fixed literal/length codes */
+
+/* input and output state */
+struct state {
+    /* output state */
+    unsigned char *out;         /* output buffer */
+    unsigned long outlen;       /* available space at out */
+    unsigned long outcnt;       /* bytes written to out so far */
+
+    /* input state */
+    const unsigned char *in;    /* input buffer */
+    unsigned long inlen;        /* available input at in */
+    unsigned long incnt;        /* bytes read so far */
+    int bitbuf;                 /* bit buffer */
+    int bitcnt;                 /* number of bits in bit buffer */
+
+    /* input limit error return state for bits() and decode() */
+    jmp_buf env;
+};
+
+/*
+ * Return need bits from the input stream.  This always leaves less than
+ * eight bits in the buffer.  bits() works properly for need == 0.
+ *
+ * Format notes:
+ *
+ * - Bits are stored in bytes from the least significant bit to the most
+ *   significant bit.  Therefore bits are dropped from the bottom of the bit
+ *   buffer, using shift right, and new bytes are appended to the top of the
+ *   bit buffer, using shift left.
+ */
+local int bits(struct state *s, int need)
+{
+    long val;           /* bit accumulator (can use up to 20 bits) */
+
+    /* load at least need bits into val */
+    val = s->bitbuf;
+    while (s->bitcnt < need) {
+        if (s->incnt == s->inlen)
+            longjmp(s->env, 1);         /* out of input */
+        val |= (long)(s->in[s->incnt++]) << s->bitcnt;  /* load eight bits */
+        s->bitcnt += 8;
+    }
+
+    /* drop need bits and update buffer, always zero to seven bits left */
+    s->bitbuf = (int)(val >> need);
+    s->bitcnt -= need;
+
+    /* return need bits, zeroing the bits above that */
+    return (int)(val & ((1L << need) - 1));
+}
+
+/*
+ * Process a stored block.
+ *
+ * Format notes:
+ *
+ * - After the two-bit stored block type (00), the stored block length and
+ *   stored bytes are byte-aligned for fast copying.  Therefore any leftover
+ *   bits in the byte that has the last bit of the type, as many as seven, are
+ *   discarded.  The value of the discarded bits are not defined and should not
+ *   be checked against any expectation.
+ *
+ * - The second inverted copy of the stored block length does not have to be
+ *   checked, but it's probably a good idea to do so anyway.
+ *
+ * - A stored block can have zero length.  This is sometimes used to byte-align
+ *   subsets of the compressed data for random access or partial recovery.
+ */
+local int stored(struct state *s)
+{
+    unsigned len;       /* length of stored block */
+
+    /* discard leftover bits from current byte (assumes s->bitcnt < 8) */
+    s->bitbuf = 0;
+    s->bitcnt = 0;
+
+    /* get length and check against its one's complement */
+    if (s->incnt + 4 > s->inlen)
+        return 2;                               /* not enough input */
+    len = s->in[s->incnt++];
+    len |= s->in[s->incnt++] << 8;
+    if (s->in[s->incnt++] != (~len & 0xff) ||
+        s->in[s->incnt++] != ((~len >> 8) & 0xff))
+        return -2;                              /* didn't match complement! */
+
+    /* copy len bytes from in to out */
+    if (s->incnt + len > s->inlen)
+        return 2;                               /* not enough input */
+    if (s->out != NIL) {
+        if (s->outcnt + len > s->outlen)
+            return 1;                           /* not enough output space */
+        while (len--)
+            s->out[s->outcnt++] = s->in[s->incnt++];
+    }
+    else {                                      /* just scanning */
+        s->outcnt += len;
+        s->incnt += len;
+    }
+
+    /* done with a valid stored block */
+    return 0;
+}
+
+/*
+ * Huffman code decoding tables.  count[1..MAXBITS] is the number of symbols of
+ * each length, which for a canonical code are stepped through in order.
+ * symbol[] are the symbol values in canonical order, where the number of
+ * entries is the sum of the counts in count[].  The decoding process can be
+ * seen in the function decode() below.
+ */
+struct huffman {
+    short *count;       /* number of symbols of each length */
+    short *symbol;      /* canonically ordered symbols */
+};
+
+/*
+ * Decode a code from the stream s using huffman table h.  Return the symbol or
+ * a negative value if there is an error.  If all of the lengths are zero, i.e.
+ * an empty code, or if the code is incomplete and an invalid code is received,
+ * then -10 is returned after reading MAXBITS bits.
+ *
+ * Format notes:
+ *
+ * - The codes as stored in the compressed data are bit-reversed relative to
+ *   a simple integer ordering of codes of the same lengths.  Hence below the
+ *   bits are pulled from the compressed data one at a time and used to
+ *   build the code value reversed from what is in the stream in order to
+ *   permit simple integer comparisons for decoding.  A table-based decoding
+ *   scheme (as used in zlib) does not need to do this reversal.
+ *
+ * - The first code for the shortest length is all zeros.  Subsequent codes of
+ *   the same length are simply integer increments of the previous code.  When
+ *   moving up a length, a zero bit is appended to the code.  For a complete
+ *   code, the last code of the longest length will be all ones.
+ *
+ * - Incomplete codes are handled by this decoder, since they are permitted
+ *   in the deflate format.  See the format notes for fixed() and dynamic().
+ */
+#ifdef SLOW
+local int decode(struct state *s, const struct huffman *h)
+{
+    int len;            /* current number of bits in code */
+    int code;           /* len bits being decoded */
+    int first;          /* first code of length len */
+    int count;          /* number of codes of length len */
+    int index;          /* index of first code of length len in symbol table */
+
+    code = first = index = 0;
+    for (len = 1; len <= MAXBITS; len++) {
+        code |= bits(s, 1);             /* get next bit */
+        count = h->count[len];
+        if (code - count < first)       /* if length len, return symbol */
+            return h->symbol[index + (code - first)];
+        index += count;                 /* else update for next length */
+        first += count;
+        first <<= 1;
+        code <<= 1;
+    }
+    return -10;                         /* ran out of codes */
+}
+
+/*
+ * A faster version of decode() for real applications of this code.   It's not
+ * as readable, but it makes puff() twice as fast.  And it only makes the code
+ * a few percent larger.
+ */
+#else /* !SLOW */
+local int decode(struct state *s, const struct huffman *h)
+{
+    int len;            /* current number of bits in code */
+    int code;           /* len bits being decoded */
+    int first;          /* first code of length len */
+    int count;          /* number of codes of length len */
+    int index;          /* index of first code of length len in symbol table */
+    int bitbuf;         /* bits from stream */
+    int left;           /* bits left in next or left to process */
+    short *next;        /* next number of codes */
+
+    bitbuf = s->bitbuf;
+    left = s->bitcnt;
+    code = first = index = 0;
+    len = 1;
+    next = h->count + 1;
+    while (1) {
+        while (left--) {
+            code |= bitbuf & 1;
+            bitbuf >>= 1;
+            count = *next++;
+            if (code - count < first) { /* if length len, return symbol */
+                s->bitbuf = bitbuf;
+                s->bitcnt = (s->bitcnt - len) & 7;
+                return h->symbol[index + (code - first)];
+            }
+            index += count;             /* else update for next length */
+            first += count;
+            first <<= 1;
+            code <<= 1;
+            len++;
+        }
+        left = (MAXBITS+1) - len;
+        if (left == 0)
+            break;
+        if (s->incnt == s->inlen)
+            longjmp(s->env, 1);         /* out of input */
+        bitbuf = s->in[s->incnt++];
+        if (left > 8)
+            left = 8;
+    }
+    return -10;                         /* ran out of codes */
+}
+#endif /* SLOW */
+
+/*
+ * Given the list of code lengths length[0..n-1] representing a canonical
+ * Huffman code for n symbols, construct the tables required to decode those
+ * codes.  Those tables are the number of codes of each length, and the symbols
+ * sorted by length, retaining their original order within each length.  The
+ * return value is zero for a complete code set, negative for an over-
+ * subscribed code set, and positive for an incomplete code set.  The tables
+ * can be used if the return value is zero or positive, but they cannot be used
+ * if the return value is negative.  If the return value is zero, it is not
+ * possible for decode() using that table to return an error--any stream of
+ * enough bits will resolve to a symbol.  If the return value is positive, then
+ * it is possible for decode() using that table to return an error for received
+ * codes past the end of the incomplete lengths.
+ *
+ * Not used by decode(), but used for error checking, h->count[0] is the number
+ * of the n symbols not in the code.  So n - h->count[0] is the number of
+ * codes.  This is useful for checking for incomplete codes that have more than
+ * one symbol, which is an error in a dynamic block.
+ *
+ * Assumption: for all i in 0..n-1, 0 <= length[i] <= MAXBITS
+ * This is assured by the construction of the length arrays in dynamic() and
+ * fixed() and is not verified by construct().
+ *
+ * Format notes:
+ *
+ * - Permitted and expected examples of incomplete codes are one of the fixed
+ *   codes and any code with a single symbol which in deflate is coded as one
+ *   bit instead of zero bits.  See the format notes for fixed() and dynamic().
+ *
+ * - Within a given code length, the symbols are kept in ascending order for
+ *   the code bits definition.
+ */
+local int construct(struct huffman *h, const short *length, int n)
+{
+    int symbol;         /* current symbol when stepping through length[] */
+    int len;            /* current length when stepping through h->count[] */
+    int left;           /* number of possible codes left of current length */
+    short offs[MAXBITS+1];      /* offsets in symbol table for each length */
+
+    /* count number of codes of each length */
+    for (len = 0; len <= MAXBITS; len++)
+        h->count[len] = 0;
+    for (symbol = 0; symbol < n; symbol++)
+        (h->count[length[symbol]])++;   /* assumes lengths are within bounds */
+    if (h->count[0] == n)               /* no codes! */
+        return 0;                       /* complete, but decode() will fail */
+
+    /* check for an over-subscribed or incomplete set of lengths */
+    left = 1;                           /* one possible code of zero length */
+    for (len = 1; len <= MAXBITS; len++) {
+        left <<= 1;                     /* one more bit, double codes left */
+        left -= h->count[len];          /* deduct count from possible codes */
+        if (left < 0)
+            return left;                /* over-subscribed--return negative */
+    }                                   /* left > 0 means incomplete */
+
+    /* generate offsets into symbol table for each length for sorting */
+    offs[1] = 0;
+    for (len = 1; len < MAXBITS; len++)
+        offs[len + 1] = offs[len] + h->count[len];
+
+    /*
+     * put symbols in table sorted by length, by symbol order within each
+     * length
+     */
+    for (symbol = 0; symbol < n; symbol++)
+        if (length[symbol] != 0)
+            h->symbol[offs[length[symbol]]++] = symbol;
+
+    /* return zero for complete set, positive for incomplete set */
+    return left;
+}
+
+/*
+ * Decode literal/length and distance codes until an end-of-block code.
+ *
+ * Format notes:
+ *
+ * - Compressed data that is after the block type if fixed or after the code
+ *   description if dynamic is a combination of literals and length/distance
+ *   pairs terminated by and end-of-block code.  Literals are simply Huffman
+ *   coded bytes.  A length/distance pair is a coded length followed by a
+ *   coded distance to represent a string that occurs earlier in the
+ *   uncompressed data that occurs again at the current location.
+ *
+ * - Literals, lengths, and the end-of-block code are combined into a single
+ *   code of up to 286 symbols.  They are 256 literals (0..255), 29 length
+ *   symbols (257..285), and the end-of-block symbol (256).
+ *
+ * - There are 256 possible lengths (3..258), and so 29 symbols are not enough
+ *   to represent all of those.  Lengths 3..10 and 258 are in fact represented
+ *   by just a length symbol.  Lengths 11..257 are represented as a symbol and
+ *   some number of extra bits that are added as an integer to the base length
+ *   of the length symbol.  The number of extra bits is determined by the base
+ *   length symbol.  These are in the static arrays below, lens[] for the base
+ *   lengths and lext[] for the corresponding number of extra bits.
+ *
+ * - The reason that 258 gets its own symbol is that the longest length is used
+ *   often in highly redundant files.  Note that 258 can also be coded as the
+ *   base value 227 plus the maximum extra value of 31.  While a good deflate
+ *   should never do this, it is not an error, and should be decoded properly.
+ *
+ * - If a length is decoded, including its extra bits if any, then it is
+ *   followed a distance code.  There are up to 30 distance symbols.  Again
+ *   there are many more possible distances (1..32768), so extra bits are added
+ *   to a base value represented by the symbol.  The distances 1..4 get their
+ *   own symbol, but the rest require extra bits.  The base distances and
+ *   corresponding number of extra bits are below in the static arrays dist[]
+ *   and dext[].
+ *
+ * - Literal bytes are simply written to the output.  A length/distance pair is
+ *   an instruction to copy previously uncompressed bytes to the output.  The
+ *   copy is from distance bytes back in the output stream, copying for length
+ *   bytes.
+ *
+ * - Distances pointing before the beginning of the output data are not
+ *   permitted.
+ *
+ * - Overlapped copies, where the length is greater than the distance, are
+ *   allowed and common.  For example, a distance of one and a length of 258
+ *   simply copies the last byte 258 times.  A distance of four and a length of
+ *   twelve copies the last four bytes three times.  A simple forward copy
+ *   ignoring whether the length is greater than the distance or not implements
+ *   this correctly.  You should not use memcpy() since its behavior is not
+ *   defined for overlapped arrays.  You should not use memmove() or bcopy()
+ *   since though their behavior -is- defined for overlapping arrays, it is
+ *   defined to do the wrong thing in this case.
+ */
+local int codes(struct state *s,
+                const struct huffman *lencode,
+                const struct huffman *distcode)
+{
+    int symbol;         /* decoded symbol */
+    int len;            /* length for copy */
+    unsigned dist;      /* distance for copy */
+    static const short lens[29] = { /* Size base for length codes 257..285 */
+        3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31,
+        35, 43, 51, 59, 67, 83, 99, 115, 131, 163, 195, 227, 258};
+    static const short lext[29] = { /* Extra bits for length codes 257..285 */
+        0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2,
+        3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0};
+    static const short dists[30] = { /* Offset base for distance codes 0..29 */
+        1, 2, 3, 4, 5, 7, 9, 13, 17, 25, 33, 49, 65, 97, 129, 193,
+        257, 385, 513, 769, 1025, 1537, 2049, 3073, 4097, 6145,
+        8193, 12289, 16385, 24577};
+    static const short dext[30] = { /* Extra bits for distance codes 0..29 */
+        0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6,
+        7, 7, 8, 8, 9, 9, 10, 10, 11, 11,
+        12, 12, 13, 13};
+
+    /* decode literals and length/distance pairs */
+    do {
+        symbol = decode(s, lencode);
+        if (symbol < 0)
+            return symbol;              /* invalid symbol */
+        if (symbol < 256) {             /* literal: symbol is the byte */
+            /* write out the literal */
+            if (s->out != NIL) {
+                if (s->outcnt == s->outlen)
+                    return 1;
+                s->out[s->outcnt] = symbol;
+            }
+            s->outcnt++;
+        }
+        else if (symbol > 256) {        /* length */
+            /* get and compute length */
+            symbol -= 257;
+            if (symbol >= 29)
+                return -10;             /* invalid fixed code */
+            len = lens[symbol] + bits(s, lext[symbol]);
+
+            /* get and check distance */
+            symbol = decode(s, distcode);
+            if (symbol < 0)
+                return symbol;          /* invalid symbol */
+            dist = dists[symbol] + bits(s, dext[symbol]);
+#ifndef INFLATE_ALLOW_INVALID_DISTANCE_TOOFAR_ARRR
+            if (dist > s->outcnt)
+                return -11;     /* distance too far back */
+#endif
+
+            /* copy length bytes from distance bytes back */
+            if (s->out != NIL) {
+                if (s->outcnt + len > s->outlen)
+                    return 1;
+                while (len--) {
+                    s->out[s->outcnt] =
+#ifdef INFLATE_ALLOW_INVALID_DISTANCE_TOOFAR_ARRR
+                        dist > s->outcnt ?
+                            0 :
+#endif
+                            s->out[s->outcnt - dist];
+                    s->outcnt++;
+                }
+            }
+            else
+                s->outcnt += len;
+        }
+    } while (symbol != 256);            /* end of block symbol */
+
+    /* done with a valid fixed or dynamic block */
+    return 0;
+}
+
+/*
+ * Process a fixed codes block.
+ *
+ * Format notes:
+ *
+ * - This block type can be useful for compressing small amounts of data for
+ *   which the size of the code descriptions in a dynamic block exceeds the
+ *   benefit of custom codes for that block.  For fixed codes, no bits are
+ *   spent on code descriptions.  Instead the code lengths for literal/length
+ *   codes and distance codes are fixed.  The specific lengths for each symbol
+ *   can be seen in the "for" loops below.
+ *
+ * - The literal/length code is complete, but has two symbols that are invalid
+ *   and should result in an error if received.  This cannot be implemented
+ *   simply as an incomplete code since those two symbols are in the "middle"
+ *   of the code.  They are eight bits long and the longest literal/length\
+ *   code is nine bits.  Therefore the code must be constructed with those
+ *   symbols, and the invalid symbols must be detected after decoding.
+ *
+ * - The fixed distance codes also have two invalid symbols that should result
+ *   in an error if received.  Since all of the distance codes are the same
+ *   length, this can be implemented as an incomplete code.  Then the invalid
+ *   codes are detected while decoding.
+ */
+local int fixed(struct state *s)
+{
+    static int virgin = 1;
+    static short lencnt[MAXBITS+1], lensym[FIXLCODES];
+    static short distcnt[MAXBITS+1], distsym[MAXDCODES];
+    static struct huffman lencode, distcode;
+
+    /* build fixed huffman tables if first call (may not be thread safe) */
+    if (virgin) {
+        int symbol;
+        short lengths[FIXLCODES];
+
+        /* construct lencode and distcode */
+        lencode.count = lencnt;
+        lencode.symbol = lensym;
+        distcode.count = distcnt;
+        distcode.symbol = distsym;
+
+        /* literal/length table */
+        for (symbol = 0; symbol < 144; symbol++)
+            lengths[symbol] = 8;
+        for (; symbol < 256; symbol++)
+            lengths[symbol] = 9;
+        for (; symbol < 280; symbol++)
+            lengths[symbol] = 7;
+        for (; symbol < FIXLCODES; symbol++)
+            lengths[symbol] = 8;
+        construct(&lencode, lengths, FIXLCODES);
+
+        /* distance table */
+        for (symbol = 0; symbol < MAXDCODES; symbol++)
+            lengths[symbol] = 5;
+        construct(&distcode, lengths, MAXDCODES);
+
+        /* do this just once */
+        virgin = 0;
+    }
+
+    /* decode data until end-of-block code */
+    return codes(s, &lencode, &distcode);
+}
+
+/*
+ * Process a dynamic codes block.
+ *
+ * Format notes:
+ *
+ * - A dynamic block starts with a description of the literal/length and
+ *   distance codes for that block.  New dynamic blocks allow the compressor to
+ *   rapidly adapt to changing data with new codes optimized for that data.
+ *
+ * - The codes used by the deflate format are "canonical", which means that
+ *   the actual bits of the codes are generated in an unambiguous way simply
+ *   from the number of bits in each code.  Therefore the code descriptions
+ *   are simply a list of code lengths for each symbol.
+ *
+ * - The code lengths are stored in order for the symbols, so lengths are
+ *   provided for each of the literal/length symbols, and for each of the
+ *   distance symbols.
+ *
+ * - If a symbol is not used in the block, this is represented by a zero as the
+ *   code length.  This does not mean a zero-length code, but rather that no
+ *   code should be created for this symbol.  There is no way in the deflate
+ *   format to represent a zero-length code.
+ *
+ * - The maximum number of bits in a code is 15, so the possible lengths for
+ *   any code are 1..15.
+ *
+ * - The fact that a length of zero is not permitted for a code has an
+ *   interesting consequence.  Normally if only one symbol is used for a given
+ *   code, then in fact that code could be represented with zero bits.  However
+ *   in deflate, that code has to be at least one bit.  So for example, if
+ *   only a single distance base symbol appears in a block, then it will be
+ *   represented by a single code of length one, in particular one 0 bit.  This
+ *   is an incomplete code, since if a 1 bit is received, it has no meaning,
+ *   and should result in an error.  So incomplete distance codes of one symbol
+ *   should be permitted, and the receipt of invalid codes should be handled.
+ *
+ * - It is also possible to have a single literal/length code, but that code
+ *   must be the end-of-block code, since every dynamic block has one.  This
+ *   is not the most efficient way to create an empty block (an empty fixed
+ *   block is fewer bits), but it is allowed by the format.  So incomplete
+ *   literal/length codes of one symbol should also be permitted.
+ *
+ * - If there are only literal codes and no lengths, then there are no distance
+ *   codes.  This is represented by one distance code with zero bits.
+ *
+ * - The list of up to 286 length/literal lengths and up to 30 distance lengths
+ *   are themselves compressed using Huffman codes and run-length encoding.  In
+ *   the list of code lengths, a 0 symbol means no code, a 1..15 symbol means
+ *   that length, and the symbols 16, 17, and 18 are run-length instructions.
+ *   Each of 16, 17, and 18 are followed by extra bits to define the length of
+ *   the run.  16 copies the last length 3 to 6 times.  17 represents 3 to 10
+ *   zero lengths, and 18 represents 11 to 138 zero lengths.  Unused symbols
+ *   are common, hence the special coding for zero lengths.
+ *
+ * - The symbols for 0..18 are Huffman coded, and so that code must be
+ *   described first.  This is simply a sequence of up to 19 three-bit values
+ *   representing no code (0) or the code length for that symbol (1..7).
+ *
+ * - A dynamic block starts with three fixed-size counts from which is computed
+ *   the number of literal/length code lengths, the number of distance code
+ *   lengths, and the number of code length code lengths (ok, you come up with
+ *   a better name!) in the code descriptions.  For the literal/length and
+ *   distance codes, lengths after those provided are considered zero, i.e. no
+ *   code.  The code length code lengths are received in a permuted order (see
+ *   the order[] array below) to make a short code length code length list more
+ *   likely.  As it turns out, very short and very long codes are less likely
+ *   to be seen in a dynamic code description, hence what may appear initially
+ *   to be a peculiar ordering.
+ *
+ * - Given the number of literal/length code lengths (nlen) and distance code
+ *   lengths (ndist), then they are treated as one long list of nlen + ndist
+ *   code lengths.  Therefore run-length coding can and often does cross the
+ *   boundary between the two sets of lengths.
+ *
+ * - So to summarize, the code description at the start of a dynamic block is
+ *   three counts for the number of code lengths for the literal/length codes,
+ *   the distance codes, and the code length codes.  This is followed by the
+ *   code length code lengths, three bits each.  This is used to construct the
+ *   code length code which is used to read the remainder of the lengths.  Then
+ *   the literal/length code lengths and distance lengths are read as a single
+ *   set of lengths using the code length codes.  Codes are constructed from
+ *   the resulting two sets of lengths, and then finally you can start
+ *   decoding actual compressed data in the block.
+ *
+ * - For reference, a "typical" size for the code description in a dynamic
+ *   block is around 80 bytes.
+ */
+local int dynamic(struct state *s)
+{
+    int nlen, ndist, ncode;             /* number of lengths in descriptor */
+    int index;                          /* index of lengths[] */
+    int err;                            /* construct() return value */
+    short lengths[MAXCODES];            /* descriptor code lengths */
+    short lencnt[MAXBITS+1], lensym[MAXLCODES];         /* lencode memory */
+    short distcnt[MAXBITS+1], distsym[MAXDCODES];       /* distcode memory */
+    struct huffman lencode, distcode;   /* length and distance codes */
+    static const short order[19] =      /* permutation of code length codes */
+        {16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15};
+
+    /* construct lencode and distcode */
+    lencode.count = lencnt;
+    lencode.symbol = lensym;
+    distcode.count = distcnt;
+    distcode.symbol = distsym;
+
+    /* get number of lengths in each table, check lengths */
+    nlen = bits(s, 5) + 257;
+    ndist = bits(s, 5) + 1;
+    ncode = bits(s, 4) + 4;
+    if (nlen > MAXLCODES || ndist > MAXDCODES)
+        return -3;                      /* bad counts */
+
+    /* read code length code lengths (really), missing lengths are zero */
+    for (index = 0; index < ncode; index++)
+        lengths[order[index]] = bits(s, 3);
+    for (; index < 19; index++)
+        lengths[order[index]] = 0;
+
+    /* build huffman table for code lengths codes (use lencode temporarily) */
+    err = construct(&lencode, lengths, 19);
+    if (err != 0)               /* require complete code set here */
+        return -4;
+
+    /* read length/literal and distance code length tables */
+    index = 0;
+    while (index < nlen + ndist) {
+        int symbol;             /* decoded value */
+        int len;                /* last length to repeat */
+
+        symbol = decode(s, &lencode);
+        if (symbol < 0)
+            return symbol;          /* invalid symbol */
+        if (symbol < 16)                /* length in 0..15 */
+            lengths[index++] = symbol;
+        else {                          /* repeat instruction */
+            len = 0;                    /* assume repeating zeros */
+            if (symbol == 16) {         /* repeat last length 3..6 times */
+                if (index == 0)
+                    return -5;          /* no last length! */
+                len = lengths[index - 1];       /* last length */
+                symbol = 3 + bits(s, 2);
+            }
+            else if (symbol == 17)      /* repeat zero 3..10 times */
+                symbol = 3 + bits(s, 3);
+            else                        /* == 18, repeat zero 11..138 times */
+                symbol = 11 + bits(s, 7);
+            if (index + symbol > nlen + ndist)
+                return -6;              /* too many lengths! */
+            while (symbol--)            /* repeat last or zero symbol times */
+                lengths[index++] = len;
+        }
+    }
+
+    /* check for end-of-block code -- there better be one! */
+    if (lengths[256] == 0)
+        return -9;
+
+    /* build huffman table for literal/length codes */
+    err = construct(&lencode, lengths, nlen);
+    if (err && (err < 0 || nlen != lencode.count[0] + lencode.count[1]))
+        return -7;      /* incomplete code ok only for single length 1 code */
+
+    /* build huffman table for distance codes */
+    err = construct(&distcode, lengths + nlen, ndist);
+    if (err && (err < 0 || ndist != distcode.count[0] + distcode.count[1]))
+        return -8;      /* incomplete code ok only for single length 1 code */
+
+    /* decode data until end-of-block code */
+    return codes(s, &lencode, &distcode);
+}
+
+/*
+ * Inflate source to dest.  On return, destlen and sourcelen are updated to the
+ * size of the uncompressed data and the size of the deflate data respectively.
+ * On success, the return value of puff() is zero.  If there is an error in the
+ * source data, i.e. it is not in the deflate format, then a negative value is
+ * returned.  If there is not enough input available or there is not enough
+ * output space, then a positive error is returned.  In that case, destlen and
+ * sourcelen are not updated to facilitate retrying from the beginning with the
+ * provision of more input data or more output space.  In the case of invalid
+ * inflate data (a negative error), the dest and source pointers are updated to
+ * facilitate the debugging of deflators.
+ *
+ * puff() also has a mode to determine the size of the uncompressed output with
+ * no output written.  For this dest must be (unsigned char *)0.  In this case,
+ * the input value of *destlen is ignored, and on return *destlen is set to the
+ * size of the uncompressed output.
+ *
+ * The return codes are:
+ *
+ *   2:  available inflate data did not terminate
+ *   1:  output space exhausted before completing inflate
+ *   0:  successful inflate
+ *  -1:  invalid block type (type == 3)
+ *  -2:  stored block length did not match one's complement
+ *  -3:  dynamic block code description: too many length or distance codes
+ *  -4:  dynamic block code description: code lengths codes incomplete
+ *  -5:  dynamic block code description: repeat lengths with no first length
+ *  -6:  dynamic block code description: repeat more than specified lengths
+ *  -7:  dynamic block code description: invalid literal/length code lengths
+ *  -8:  dynamic block code description: invalid distance code lengths
+ *  -9:  dynamic block code description: missing end-of-block code
+ * -10:  invalid literal/length or distance code in fixed or dynamic block
+ * -11:  distance is too far back in fixed or dynamic block
+ *
+ * Format notes:
+ *
+ * - Three bits are read for each block to determine the kind of block and
+ *   whether or not it is the last block.  Then the block is decoded and the
+ *   process repeated if it was not the last block.
+ *
+ * - The leftover bits in the last byte of the deflate data after the last
+ *   block (if it was a fixed or dynamic block) are undefined and have no
+ *   expected values to check.
+ */
+int puff(unsigned char *dest,           /* pointer to destination pointer */
+         unsigned long *destlen,        /* amount of output space */
+         const unsigned char *source,   /* pointer to source data pointer */
+         unsigned long *sourcelen)      /* amount of input available */
+{
+    struct state s;             /* input/output state */
+    int last, type;             /* block information */
+    int err;                    /* return value */
+
+    /* initialize output state */
+    s.out = dest;
+    s.outlen = *destlen;                /* ignored if dest is NIL */
+    s.outcnt = 0;
+
+    /* initialize input state */
+    s.in = source;
+    s.inlen = *sourcelen;
+    s.incnt = 0;
+    s.bitbuf = 0;
+    s.bitcnt = 0;
+
+    /* return if bits() or decode() tries to read past available input */
+    if (setjmp(s.env) != 0)             /* if came back here via longjmp() */
+        err = 2;                        /* then skip do-loop, return error */
+    else {
+        /* process blocks until last block or error */
+        do {
+            last = bits(&s, 1);         /* one if last block */
+            type = bits(&s, 2);         /* block type 0..3 */
+            err = type == 0 ?
+                    stored(&s) :
+                    (type == 1 ?
+                        fixed(&s) :
+                        (type == 2 ?
+                            dynamic(&s) :
+                            -1));       /* type == 3, invalid */
+            if (err != 0)
+                break;                  /* return with error */
+        } while (!last);
+    }
+
+    /* update the lengths and return */
+    if (err <= 0) {
+        *destlen = s.outcnt;
+        *sourcelen = s.incnt;
+    }
+    return err;
+}
+
+#undef local
+#undef MAXBITS
+#undef MAXLCODES
+#undef MAXDCODES
+#undef MAXCODES
+#undef FIXLCODES
+#undef NIL
+static constexpr uint32_t box1[] = {14,4,13,1,2,15,11,8,3,10,6,12,5,9,0,7,0,15,7,4,14,2,13,1,10,6,12,11,9,5,3,8,4,1,14,8,13,6,2,11,15,12,9,7,3,10,5,0,15,12,8,2,4,9,1,7,5,11,3,14,10,0,6,13};
+static constexpr uint32_t box2[] = {15,1,8,14,6,11,3,4,9,7,2,13,12,0,5,10,3,13,4,7,15,2,8,15,12,0,1,10,6,9,11,5,0,14,7,11,10,4,13,1,5,8,12,6,9,3,2,15,13,8,10,1,3,15,4,2,11,6,7,12,0,5,14,9};
+static constexpr uint32_t box3[] = {10,0,9,14,6,3,15,5,1,13,12,7,11,4,2,8,13,7,0,9,3,4,6,10,2,8,5,14,12,11,15,1,13,6,4,9,8,15,3,0,11,1,2,12,5,10,14,7,1,10,13,0,6,9,8,7,4,15,14,3,11,5,2,12};
+static constexpr uint32_t box4[] = {7,13,14,3,0,6,9,10,1,2,8,5,11,12,4,15,13,8,11,5,6,15,0,3,4,7,2,12,1,10,14,9,10,6,9,0,12,11,7,13,15,1,3,14,5,2,8,4,3,15,0,6,10,10,13,8,9,4,5,11,12,7,2,14};
+static constexpr uint32_t box5[] = {2,12,4,1,7,10,11,6,8,5,3,15,13,0,14,9,14,11,2,12,4,7,13,1,5,0,15,10,3,9,8,6,4,2,1,11,10,13,7,8,15,9,12,5,6,3,0,14,11,8,12,7,1,14,2,13,6,15,0,9,10,4,5,3};
+static constexpr uint32_t box6[] = {12,1,10,15,9,2,6,8,0,13,3,4,14,7,5,11,10,15,4,2,7,12,9,5,6,1,13,14,0,11,3,8,9,14,15,5,2,8,12,3,7,0,4,10,1,13,11,6,4,3,2,12,9,5,15,10,11,14,1,7,6,0,8,13};
+static constexpr uint32_t box7[] = {4,11,2,14,15,0,8,13,3,12,9,7,5,10,6,1,13,0,11,7,4,9,1,10,14,3,5,12,2,15,8,6,1,4,11,13,12,3,7,14,10,15,6,8,0,5,9,2,6,11,13,8,1,4,10,7,9,5,0,15,14,2,3,12};
+static constexpr uint32_t box8[] = {13,2,8,4,6,15,11,1,10,9,3,14,5,0,12,7,1,15,13,8,10,3,7,4,12,5,6,11,0,14,9,2,7,11,4,1,9,12,14,2,0,6,10,13,15,3,5,8,2,1,14,7,4,10,8,13,15,12,9,0,3,5,6,11};
+static constexpr uint32_t KEY_RND_SHIFT[] = {1,1,2,2,2,2,2,2,1,2,2,2,2,2,2,1};
+static constexpr uint32_t KEY_PERM_C[] = {56,48,40,32,24,16,8,0,57,49,41,33,25,17,9,1,58,50,42,34,26,18,10,2,59,51,43,35};
+static constexpr uint32_t KEY_PERM_D[] = {62,54,46,38,30,22,14,6,61,53,45,37,29,21,13,5,60,52,44,36,28,20,12,4,27,19,11,3};
+static constexpr uint32_t KEY_COMPRESSION[] = {13,16,10,23,0,4,2,27,14,5,20,9,22,18,11,3,25,7,15,6,26,19,12,1,40,51,30,36,46,54,29,39,50,44,32,47,43,48,38,55,33,52,45,41,49,35,28,31};
+static uint32_t gba(const uint8_t* a, int b, int c) {
+    return uint32_t((a[(b / 32) * 4 + 3 - (b % 32) / 8] >> (7 - b % 8)) & 1) << c;
+}
+static uint32_t gbR(uint32_t a, int b, int c) { return ((a >> (31 - b)) & 1u) << c; }
+static uint32_t gbL(uint32_t a, int b, int c) { return ((a << b) & 0x80000000u) >> c; }
+static uint32_t fsb(uint32_t a) { return (a & 0x20) | ((a & 0x1f) >> 1) | ((a & 1) << 4); }
+static void keySchedule(const uint8_t* key, int offset, uint8_t schedule[16][6], bool encrypt) {
+    uint32_t c = 0, d = 0;
+    for (int i = 0; i < 28; ++i) { c |= gba(key, KEY_PERM_C[i] + offset * 8, 31-i); d |= gba(key, KEY_PERM_D[i] + offset * 8, 31-i); }
+    for (int i = 0; i < 16; ++i) {
+        c = ((c << KEY_RND_SHIFT[i]) | (c >> (28-KEY_RND_SHIFT[i]))) & 0xfffffff0u;
+        d = ((d << KEY_RND_SHIFT[i]) | (d >> (28-KEY_RND_SHIFT[i]))) & 0xfffffff0u;
+        int target = encrypt ? i : 15-i;
+        for (int k = 0; k < 6; ++k) schedule[target][k] = 0;
+        for (int k = 0; k < 24; ++k) schedule[target][k/8] |= gbR(c,KEY_COMPRESSION[k],7-k%8);
+        for (int k = 24; k < 48; ++k) schedule[target][k/8] |= gbR(d,KEY_COMPRESSION[k]-27,7-k%8);
+    }
+}
+static void initialPermutation(uint32_t* state, const uint8_t* input){
+  state[0]=gba(input,57,31)|gba(input,49,30)|gba(input,41,29)|gba(input,33,28)|gba(input,25,27)|gba(input,17,26)|gba(input,9,25)|gba(input,1,24)|gba(input,59,23)|gba(input,51,22)|gba(input,43,21)|gba(input,35,20)|gba(input,27,19)|gba(input,19,18)|gba(input,11,17)|gba(input,3,16)|gba(input,61,15)|gba(input,53,14)|gba(input,45,13)|gba(input,37,12)|gba(input,29,11)|gba(input,21,10)|gba(input,13,9)|gba(input,5,8)|gba(input,63,7)|gba(input,55,6)|gba(input,47,5)|gba(input,39,4)|gba(input,31,3)|gba(input,23,2)|gba(input,15,1)|gba(input,7,0);
+  state[1]=gba(input,56,31)|gba(input,48,30)|gba(input,40,29)|gba(input,32,28)|gba(input,24,27)|gba(input,16,26)|gba(input,8,25)|gba(input,0,24)|gba(input,58,23)|gba(input,50,22)|gba(input,42,21)|gba(input,34,20)|gba(input,26,19)|gba(input,18,18)|gba(input,10,17)|gba(input,2,16)|gba(input,60,15)|gba(input,52,14)|gba(input,44,13)|gba(input,36,12)|gba(input,28,11)|gba(input,20,10)|gba(input,12,9)|gba(input,4,8)|gba(input,62,7)|gba(input,54,6)|gba(input,46,5)|gba(input,38,4)|gba(input,30,3)|gba(input,22,2)|gba(input,14,1)|gba(input,6,0);
+}
+
+static void inverseInitialPermutation(const uint32_t* state, uint8_t* output) {
+    constexpr int oi[] = {3,2,1,0,7,6,5,4}, bo[] = {7,6,5,4,3,2,1,0};
+    for (int i=0;i<8;++i) output[oi[i]] = gbR(state[1],bo[i],7)|gbR(state[0],bo[i],6)|gbR(state[1],bo[i]+8,5)|gbR(state[0],bo[i]+8,4)|gbR(state[1],bo[i]+16,3)|gbR(state[0],bo[i]+16,2)|gbR(state[1],bo[i]+24,1)|gbR(state[0],bo[i]+24,0);
+}
+static uint32_t f(uint32_t stateIn, const uint8_t* key){
+  uint32_t t1=gbL(stateIn,31,0)|((stateIn&-0x10000000)>>1)|gbL(stateIn,4,5)|gbL(stateIn,3,6)|((stateIn&0x0f000000)>>3)|gbL(stateIn,8,11)|gbL(stateIn,7,12)|((stateIn&0x00f00000)>>5)|gbL(stateIn,12,17)|gbL(stateIn,11,18)|((stateIn&0x000f0000)>>7)|gbL(stateIn,16,23);
+  uint32_t t2=gbL(stateIn,15,0)|((stateIn&0x0000f000)<<15)|gbL(stateIn,20,5)|gbL(stateIn,19,6)|((stateIn&0x00000f00)<<13)|gbL(stateIn,24,11)|gbL(stateIn,23,12)|((stateIn&0x000000f0)<<11)|gbL(stateIn,28,17)|gbL(stateIn,27,18)|((stateIn&0x0000000f)<<9)|gbL(stateIn,0,23);
+  uint32_t x0=((t1>>24)&0xFF)^(key[0]&0xFF),x1=((t1>>16)&0xFF)^(key[1]&0xFF),x2=((t1>>8)&0xFF)^(key[2]&0xFF);
+  uint32_t x3=((t2>>24)&0xFF)^(key[3]&0xFF),x4=((t2>>16)&0xFF)^(key[4]&0xFF),x5=((t2>>8)&0xFF)^(key[5]&0xFF);
+  uint32_t s=(box1[fsb(x0>>2)]<<28)|(box2[fsb(((x0&3)<<4)|(x1>>4))]<<24)|(box3[fsb(((x1&0x0f)<<2)|(x2>>6))]<<20)|(box4[fsb(x2&0x3f)]<<16)|(box5[fsb(x3>>2)]<<12)|(box6[fsb(((x3&3)<<4)|(x4>>4))]<<8)|(box7[fsb(((x4&0x0f)<<2)|(x5>>6))]<<4)|box8[fsb(x5&0x3f)];
+  return gbL(s,15,0)|gbL(s,6,1)|gbL(s,19,2)|gbL(s,20,3)|gbL(s,28,4)|gbL(s,11,5)|gbL(s,27,6)|gbL(s,16,7)|gbL(s,0,8)|gbL(s,14,9)|gbL(s,22,10)|gbL(s,25,11)|gbL(s,4,12)|gbL(s,17,13)|gbL(s,30,14)|gbL(s,9,15)|gbL(s,1,16)|gbL(s,7,17)|gbL(s,23,18)|gbL(s,13,19)|gbL(s,31,20)|gbL(s,26,21)|gbL(s,2,22)|gbL(s,8,23)|gbL(s,18,24)|gbL(s,12,25)|gbL(s,29,26)|gbL(s,5,27)|gbL(s,21,28)|gbL(s,10,29)|gbL(s,3,30)|gbL(s,24,31);
+}
+
+static void crypt(const uint8_t* input, uint8_t* output, const uint8_t key[16][6]) {
+    uint32_t state[2]{}; initialPermutation(state,input);
+    for (int i=0;i<15;++i) { uint32_t t=state[1]; state[1]=f(state[1],key[i])^state[0]; state[0]=t; }
+    state[0]=f(state[1],key[15])^state[0]; inverseInitialPermutation(state,output);
+}
+static std::string Decode(const std::wstring& hex) {
+    if (hex.empty() || hex.size() % 16 || hex.size() > 4*1024*1024) return {};
+    std::vector<uint8_t> bytes(hex.size()/2);
+    auto digit=[](wchar_t c)->int { if(c>=L'0'&&c<=L'9')return c-L'0'; if(c>=L'a'&&c<=L'f')return c-L'a'+10; if(c>=L'A'&&c<=L'F')return c-L'A'+10; return -1; };
+    for(size_t i=0;i<bytes.size();++i) { int a=digit(hex[i*2]), b=digit(hex[i*2+1]); if(a<0||b<0)return {}; bytes[i]=(a<<4)|b; }
+    uint8_t schedule[3][16][6]{};
+    const uint8_t key[] = "!@#)(*$%123ZXC!@!@#)(NHL";
+    keySchedule(key,16,schedule[0],false); keySchedule(key,8,schedule[1],true); keySchedule(key,0,schedule[2],false);
+    for(size_t i=0;i<bytes.size();i+=8) { crypt(bytes.data()+i,bytes.data()+i,schedule[0]); crypt(bytes.data()+i,bytes.data()+i,schedule[1]); crypt(bytes.data()+i,bytes.data()+i,schedule[2]); }
+    if(bytes.size()<6 || (bytes[0]&15)!=8 || ((bytes[0]<<8)+bytes[1])%31 || (bytes[1]&32)) return {};
+    std::string text(2*1024*1024,'\0');
+    unsigned long outputSize=(unsigned long)text.size(), inputSize=(unsigned long)bytes.size()-2;
+    if(puff((unsigned char*)text.data(),&outputSize,bytes.data()+2,&inputSize)!=0) return {};
+    // Verify zlib Adler-32 at the actual end of DEFLATE, ignoring cipher padding.
+    if(inputSize+6>bytes.size())return {};
+    uint32_t a=1,b=0; for(unsigned long i=0;i<outputSize;++i){a=(a+(uint8_t)text[i])%65521;b=(b+a)%65521;}
+    size_t p=inputSize+2;
+    uint32_t expected=(uint32_t(bytes[p])<<24)|(uint32_t(bytes[p+1])<<16)|(uint32_t(bytes[p+2])<<8)|bytes[p+3];
+    if(((b<<16)|a)!=expected)return {};
+    text.resize(outputSize); return text;
+}
+} // namespace QqQrc
+struct LyricWord { int64_t ms, duration; size_t start, length; };
+struct LyricLine { int64_t ms; std::wstring text; std::vector<LyricWord> words; int64_t duration = 0; };
+struct LyricFrame {
+    std::wstring title, artist, app, text, next;
+    std::vector<LyricWord> words;
+    int64_t position = 0;
+    double rate = 0;
+    uint64_t sampledAt = 0;
+    bool hasLyrics = false;
+};
+static LyricFrame g_lyricFrame; // Protected by g_lyricsMtx.
+static double LyricHighlightWidth(const std::vector<LyricWord>& words, double position, const std::vector<double>& widths) {
+    double result = 0;
+    for (const auto& word : words) {
+        if (word.start >= widths.size() || word.length >= widths.size() - word.start || position < word.ms) continue;
+        double fraction = word.duration > 0 ? std::clamp((position - word.ms) / word.duration, 0.0, 1.0) : 1.0;
+        double start = widths[word.start], end = widths[word.start + word.length];
+        result = std::max(result, start + (end - start) * fraction);
+    }
+    return result;
+}
+static std::vector<LyricLine> ParseLyrics(const std::wstring& lrc) {
+    std::vector<LyricLine> result;
+    std::wistringstream input(lrc);
+    std::wstring line;
+    int64_t offset = 0;
+    while (std::getline(input, line)) {
+        if (!line.empty() && line.back() == L'\r') line.pop_back();
+        if (!line.empty() && line.front() == 0xFEFF) line.erase(0, 1);
+        if (line.compare(0, 8, L"[offset:") == 0) {
+            try { offset = std::clamp(std::stoll(line.substr(8)), -600000LL, 600000LL); } catch (...) {}
+            continue;
+        }
+        size_t pos = 0;
+        std::vector<int64_t> times;
+        while (pos < line.size() && line[pos] == L'[') {
+            size_t end = line.find(L']', pos);
+            if (end == std::wstring::npos) break;
+            std::wstring tag = line.substr(pos + 1, end - pos - 1);
+            size_t colon = tag.find(L':');
+            if (colon == std::wstring::npos || colon == 0) break;
+            bool valid = true;
+            for (size_t i = 0; i < tag.size(); ++i)
+                if (!(tag[i] >= L'0' && tag[i] <= L'9') && i != colon && tag[i] != L'.') valid = false;
+            if (!valid) break;
+            try {
+                size_t consumed = 0;
+                double seconds = std::stod(tag.substr(colon + 1), &consumed);
+                int minutes = std::stoi(tag.substr(0, colon));
+                if (consumed != tag.size() - colon - 1 || seconds >= 60 || minutes > 1440) break;
+                times.push_back(minutes * 60000LL + static_cast<int64_t>(std::llround(seconds * 1000)));
+            } catch (...) { break; }
+            pos = end + 1;
+        }
+        std::wstring text = line.substr(pos);
+        // Empty timed lines deliberately clear the lyric during instrumental gaps.
+        for (auto ms : times) result.push_back({ms, text});
+    }
+    for (auto& item : result) item.ms -= offset;
+    std::stable_sort(result.begin(), result.end(), [](auto& a, auto& b) { return a.ms < b.ms; });
+    std::vector<LyricLine> merged;
+    for (auto& item : result) {
+        if (!merged.empty() && merged.back().ms == item.ms) {
+            if (!item.text.empty() && item.text != merged.back().text) {
+                if (!merged.back().text.empty()) merged.back().text += L" / ";
+                merged.back().text += item.text;
+            }
+        } else merged.push_back(std::move(item));
+    }
+    return merged;
+}
+static std::wstring LyricUtf8(const std::string& bytes) {
+    int n = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, bytes.data(), (int)bytes.size(), nullptr, 0);
+    if (n <= 0) return {};
+    std::wstring text(n, L'\0');
+    MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, bytes.data(), (int)bytes.size(), text.data(), n);
+    return text;
+}
+static std::wstring LyricUrlEncode(const std::wstring& value) {
+    int n = WideCharToMultiByte(CP_UTF8, 0, value.data(), (int)value.size(), nullptr, 0, nullptr, nullptr);
+    std::string bytes(n, '\0');
+    WideCharToMultiByte(CP_UTF8, 0, value.data(), (int)value.size(), bytes.data(), n, nullptr, nullptr);
+    std::wstring encoded;
+    constexpr wchar_t hex[] = L"0123456789ABCDEF";
+    for (unsigned char c : bytes) {
+        if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
+            (c >= '0' && c <= '9') || c == '-' || c == '_' || c == '.' || c == '~') encoded += (wchar_t)c;
+        else { encoded += L'%'; encoded += hex[c >> 4]; encoded += hex[c & 15]; }
+    }
+    return encoded;
+}
+struct LyricHttpHandle {
+    HINTERNET value;
+    ~LyricHttpHandle() { if (value) WinHttpCloseHandle(value); }
+};
+static std::wstring DownloadLyrics(const std::wstring& path, const wchar_t* host = L"lrclib.net",
+    const std::string& form = {}) {
+    if (g_unloading) return {};
+    LyricHttpHandle http{WinHttpOpen(L"Mozilla/5.0 TaskbarFluentMediaPlayer/1.6",
+        WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY, WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0)};
+    if (!http.value) return {};
+    WinHttpSetTimeouts(http.value, 1500, 1500, 1500, 1500);
+    LyricHttpHandle connection{WinHttpConnect(http.value, host, INTERNET_DEFAULT_HTTPS_PORT, 0)};
+    if (!connection.value) return {};
+    LyricHttpHandle request{WinHttpOpenRequest(connection.value, form.empty() ? L"GET" : L"POST", path.c_str(), nullptr,
+        WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES, WINHTTP_FLAG_SECURE)};
+    if (!request.value) return {};
+    DWORD redirect = WINHTTP_OPTION_REDIRECT_POLICY_NEVER;
+    WinHttpSetOption(request.value, WINHTTP_OPTION_REDIRECT_POLICY, &redirect, sizeof(redirect));
+    const wchar_t* headers = wcsstr(host,L"163.com")
+        ? L"Accept: application/json\r\nReferer: https://music.163.com/\r\nCookie: os=pc; appver=3.0.18\r\nContent-Type: application/x-www-form-urlencoded\r\n"
+        : L"Accept: application/json\r\nReferer: https://y.qq.com/\r\nContent-Type: application/x-www-form-urlencoded\r\n";
+    if (!WinHttpSendRequest(request.value, headers, (DWORD)-1L,
+        form.empty() ? WINHTTP_NO_REQUEST_DATA : (void*)form.data(), (DWORD)form.size(), (DWORD)form.size(), 0)
+        || !WinHttpReceiveResponse(request.value, nullptr)) return {};
+    DWORD status = 0, size = sizeof(status);
+    if (!WinHttpQueryHeaders(request.value, WINHTTP_QUERY_STATUS_CODE | WINHTTP_QUERY_FLAG_NUMBER,
+        WINHTTP_HEADER_NAME_BY_INDEX, &status, &size, WINHTTP_NO_HEADER_INDEX) || status != 200) return {};
+    std::string bytes;
+    ULONGLONG deadline = GetTickCount64() + 5000;
+    for (;;) {
+        if (g_unloading || GetTickCount64() > deadline) return {};
+        char buffer[8192]; DWORD read = 0;
+        if (!WinHttpReadData(request.value, buffer, sizeof(buffer), &read)) return {};
+        if (!read) break;
+        if (bytes.size() + read > 2 * 1024 * 1024) return {};
+        bytes.append(buffer, read);
+    }
+    return LyricUtf8(bytes);
+}
+static std::wstring LyricSafeFilename(std::wstring text) {
+    for (auto& c : text) if (c < 32 || wcschr(L"<>:\"/\\|?*", c)) c = L'_';
+    return text;
+}
+static std::wstring LyricIdentity(std::wstring text) {
+    std::wstring result;
+    for (wchar_t c : text) {
+        if (c >= L'A' && c <= L'Z') c += L'a' - L'A';
+        if ((c >= L'a' && c <= L'z') || (c >= L'0' && c <= L'9') ||
+            (c >= 0x3400 && c <= 0x9fff) || (c >= 0x3040 && c <= 0x30ff) || (c >= 0xac00 && c <= 0xd7af)) result += c;
+    }
+    return result;
+}
+static std::vector<std::wstring> LyricArtistSet(const std::wstring& names) {
+    std::vector<std::wstring> result;
+    size_t pos=0;
+    while(pos<names.size()) {
+        size_t end=names.find_first_of(L"/&、,，;；",pos);
+        auto name=LyricIdentity(names.substr(pos,end==std::wstring::npos?end:end-pos));
+        if(!name.empty())result.push_back(std::move(name));
+        if(end==std::wstring::npos)break;
+        pos=end+1;
+    }
+    std::sort(result.begin(),result.end());
+    result.erase(std::unique(result.begin(),result.end()),result.end());
+    return result;
+}
+static bool LyricArtistsEquivalent(const std::wstring& expected,const std::wstring& actual) {
+    auto expectedNames=LyricArtistSet(expected);
+    return !expectedNames.empty() && expectedNames==LyricArtistSet(actual);
+}
+static std::wstring LyricBase64(const std::wstring& input) {
+    constexpr wchar_t alphabet[] = L"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    std::string bytes;
+    unsigned int bits = 0; int count = 0;
+    for (wchar_t c : input) {
+        if (c == L'=') break;
+        if (iswspace(c)) continue;
+        const wchar_t* digit = c ? wcschr(alphabet, c) : nullptr;
+        if (!digit) return {};
+        bits = (bits << 6) | (unsigned int)(digit - alphabet); count += 6;
+        if (count >= 8) { count -= 8; bytes += (char)((bits >> count) & 255); }
+    }
+    return LyricUtf8(bytes);
+}
+static std::wstring LyricUnescape(std::wstring text) {
+    for (const auto& item : {std::pair{L"&apos;", L"'"}, {L"&#39;", L"'"}, {L"&quot;", L"\""},
+        {L"&#10;", L"\n"}, {L"&#13;", L"\r"}, {L"&lt;", L"<"}, {L"&gt;", L">"}, {L"&amp;", L"&"}}) {
+        size_t pos = 0;
+        while ((pos = text.find(item.first, pos)) != std::wstring::npos) {
+            text.replace(pos, wcslen(item.first), item.second); pos += wcslen(item.second);
+        }
+    }
+    return text;
+}
+static std::vector<LyricLine> ParseWordLyrics(std::wstring text) {
+    // QRC can be a plain body or an XML document with LyricContent in an attribute.
+    size_t attr = text.find(L"LyricContent=\"");
+    if (attr != std::wstring::npos) {
+        attr += 14;
+        size_t end = text.find(L'\"', attr);
+        if (end == std::wstring::npos) return {};
+        text = text.substr(attr, end - attr);
+    }
+    text = LyricUnescape(text);
+    int64_t wordOffset = 0;
+    size_t offsetTag = text.find(L"[offset:");
+    if (offsetTag != std::wstring::npos) {
+        try { wordOffset = std::clamp(std::stoll(text.substr(offsetTag + 8)), -600000LL, 600000LL); } catch (...) {}
+    }
+    // QQ sometimes represents line breaks as literal backslash-n inside XML.
+    size_t escaped = 0;
+    while ((escaped = text.find(L"\\n", escaped)) != std::wstring::npos) text.replace(escaped, 2, L"\n");
+    std::vector<LyricLine> result;
+    std::wistringstream input(text);
+    std::wstring line;
+    while (std::getline(input, line)) {
+        if (!line.empty() && line.back() == L'\r') line.pop_back();
+        if (line.empty() || line.front() != L'[') continue;
+        size_t comma = line.find(L','), close = line.find(L']');
+        if (comma == std::wstring::npos || close == std::wstring::npos || comma > close) continue;
+        try {
+            LyricLine parsed{};
+            size_t used;
+            parsed.ms = std::stoll(line.substr(1, comma - 1), &used);
+            if (used != comma - 1 || parsed.ms < 0 || parsed.ms > 86400000) continue;
+            parsed.duration = std::stoll(line.substr(comma + 1, close - comma - 1), &used);
+            if (used != close - comma - 1 || parsed.duration < 0 || parsed.duration > 600000) continue;
+            size_t pos = close + 1;
+            while (pos < line.size()) {
+                size_t open = line.find(L'(', pos), separator = line.find(L',', open), end = line.find(L')', open);
+                if (open == std::wstring::npos || separator == std::wstring::npos || end == std::wstring::npos || separator > end) {
+                    parsed.text += line.substr(pos); break;
+                }
+                int64_t start = std::stoll(line.substr(open + 1, separator - open - 1), &used);
+                if (used != separator - open - 1) throw std::invalid_argument("qrc start");
+                int64_t duration = std::stoll(line.substr(separator + 1, end - separator - 1), &used);
+                if (used != end - separator - 1 || start < 0 || duration < 0 || duration > 600000 || start > 86400000)
+                    throw std::invalid_argument("qrc duration");
+                size_t length = open - pos;
+                if (length) parsed.words.push_back({start, duration, parsed.text.size(), length});
+                parsed.text += line.substr(pos, length);
+                pos = end + 1;
+            }
+            result.push_back(std::move(parsed));
+        } catch (...) { continue; }
+    }
+    if (!result.empty()) {
+        for (auto& item : result) { item.ms -= wordOffset; for (auto& word : item.words) word.ms -= wordOffset; }
+        std::stable_sort(result.begin(), result.end(), [](auto& a, auto& b) { return a.ms < b.ms; });
+        return result;
+    }
+    // Enhanced LRC: [00:01.00]<00:01.00>word<00:01.40>word<00:02.00>
+    result = ParseLyrics(text);
+    for (size_t index = 0; index < result.size(); ++index) {
+        auto& item = result[index];
+        std::wstring source = item.text, plain;
+        std::vector<std::pair<int64_t, size_t>> markers;
+        size_t pos = 0;
+        while (pos < source.size()) {
+            if (source[pos] == L'<') {
+                size_t end = source.find(L'>', pos);
+                if (end != std::wstring::npos) {
+                    auto stamp = ParseLyrics(L"[" + source.substr(pos + 1, end - pos - 1) + L"]");
+                    if (!stamp.empty()) { markers.emplace_back(stamp[0].ms - wordOffset, plain.size()); pos = end + 1; continue; }
+                }
+            }
+            plain += source[pos++];
+        }
+        if (markers.size() < 2) continue;
+        bool valid = true;
+        for (size_t i = 0; i + 1 < markers.size(); ++i) {
+            auto [time, offset] = markers[i];
+            auto [nextTime, nextOffset] = markers[i+1];
+            if (nextTime < time) { valid = false; break; }
+            if (nextOffset > offset) item.words.push_back({time, nextTime - time, offset, nextOffset - offset});
+        }
+        // Without an explicit end marker, the last token stays unhighlighted.
+        if (valid) item.text = std::move(plain); else item.words.clear();
+    }
+    return result;
+}
+static std::wstring QrcContent(const std::wstring& xml) {
+    size_t tag = xml.find(L"<content");
+    if (tag == std::wstring::npos) return {};
+    size_t start = xml.find(L"<![CDATA[", tag), end = xml.find(L"]]>", start);
+    if (start == std::wstring::npos || end == std::wstring::npos) return {};
+    std::wstring body = xml.substr(start + 9, end - start - 9);
+    if (body.find(L'[') != std::wstring::npos || body.find(L'<') != std::wstring::npos) return body;
+    body.erase(std::remove_if(body.begin(), body.end(), [](wchar_t c) { return iswspace(c); }), body.end());
+    return LyricUtf8(QqQrc::Decode(body));
+}
+static std::string LyricUtf8Bytes(const std::wstring& value) {
+    int n = WideCharToMultiByte(CP_UTF8,0,value.data(),(int)value.size(),nullptr,0,nullptr,nullptr);
+    std::string bytes(n,'\0');
+    WideCharToMultiByte(CP_UTF8,0,value.data(),(int)value.size(),bytes.data(),n,nullptr,nullptr);
+    return bytes;
+}
+static std::string LyricHex(const unsigned char* bytes, size_t size, bool upper) {
+    const char* hex = upper ? "0123456789ABCDEF" : "0123456789abcdef";
+    std::string result; result.reserve(size*2);
+    for(size_t i=0;i<size;++i){result+=hex[bytes[i]>>4];result+=hex[bytes[i]&15];}
+    return result;
+}
+struct LyricCryptoAlgorithm {
+    BCRYPT_ALG_HANDLE value=nullptr;
+    ~LyricCryptoAlgorithm(){if(value)BCryptCloseAlgorithmProvider(value,0);}
+};
+struct LyricCryptoKey {
+    BCRYPT_KEY_HANDLE value=nullptr;
+    ~LyricCryptoKey(){if(value)BCryptDestroyKey(value);}
+};
+static std::string NeteaseEapiForm(const std::string& path, const std::string& json) {
+    // EAPI request envelope: MD5 of the canonical request, then AES-128-ECB/PKCS7.
+    LyricCryptoAlgorithm md5;
+    if(BCryptOpenAlgorithmProvider(&md5.value,BCRYPT_MD5_ALGORITHM,nullptr,0)<0)return {};
+    std::string message="nobody"+path+"use"+json+"md5forencrypt";
+    unsigned char digest[16]{};
+    if(BCryptHash(md5.value,nullptr,0,(PUCHAR)message.data(),(ULONG)message.size(),digest,sizeof(digest))<0)return {};
+    std::string plaintext=path+"-36cd479b6b5-"+json+"-36cd479b6b5-"+LyricHex(digest,sizeof(digest),false);
+    LyricCryptoAlgorithm aes;
+    LyricCryptoKey key;
+    if(BCryptOpenAlgorithmProvider(&aes.value,BCRYPT_AES_ALGORITHM,nullptr,0)<0)return {};
+    if(BCryptSetProperty(aes.value,BCRYPT_CHAINING_MODE,(PUCHAR)BCRYPT_CHAIN_MODE_ECB,sizeof(BCRYPT_CHAIN_MODE_ECB),0)<0)return {};
+    const char secret[]="e82ckenh8dichen8";
+    if(BCryptGenerateSymmetricKey(aes.value,&key.value,nullptr,0,(PUCHAR)secret,16,0)<0)return {};
+    ULONG size=0;
+    if(BCryptEncrypt(key.value,(PUCHAR)plaintext.data(),(ULONG)plaintext.size(),nullptr,nullptr,0,nullptr,0,&size,BCRYPT_BLOCK_PADDING)<0)return {};
+    std::vector<unsigned char> encrypted(size);
+    if(BCryptEncrypt(key.value,(PUCHAR)plaintext.data(),(ULONG)plaintext.size(),nullptr,nullptr,0,encrypted.data(),size,&size,BCRYPT_BLOCK_PADDING)<0)return {};
+    return "params="+LyricHex(encrypted.data(),size,true);
+}
+static std::wstring DownloadNetease(const std::wstring& apiPath, winrt::Windows::Data::Json::JsonObject data) {
+    using namespace winrt::Windows::Data::Json;
+    JsonObject header;
+    header.SetNamedValue(L"os",JsonValue::CreateStringValue(L"pc"));
+    header.SetNamedValue(L"appver",JsonValue::CreateStringValue(L"3.0.18"));
+    header.SetNamedValue(L"deviceId",JsonValue::CreateStringValue(L""));
+    data.SetNamedValue(L"header",JsonValue::CreateStringValue(header.Stringify()));
+    auto form=NeteaseEapiForm(LyricUtf8Bytes(apiPath),LyricUtf8Bytes(std::wstring(data.Stringify())));
+    if(form.empty())return {};
+    return DownloadLyrics(L"/eapi"+apiPath.substr(4),L"interface3.music.163.com",form);
+}
+static std::vector<LyricLine> ParseYrcLyrics(const std::wstring& yrc) {
+    std::wistringstream input(yrc);
+    std::wstring line, qrc;
+    while(std::getline(input,line)) {
+        if(line.empty()||line.front()!=L'[')continue;
+        size_t close=line.find(L']');
+        if(close==std::wstring::npos||line.find(L',')>close)continue;
+        std::wstring converted=line.substr(0,close+1);
+        size_t pos=close+1;
+        bool valid=true;
+        while(pos<line.size()&&line[pos]!=L'\r') {
+            if(line[pos]!=L'('){valid=false;break;}
+            size_t end=line.find(L')',pos), first=line.find(L',',pos), second=line.find(L',',first==std::wstring::npos?pos:first+1);
+            if(end==std::wstring::npos||first==std::wstring::npos||second==std::wstring::npos||second>end){valid=false;break;}
+            size_t next=line.find(L'(',end+1);
+            std::wstring token=line.substr(end+1,next==std::wstring::npos?next:next-end-1);
+            if(!token.empty()&&token.back()==L'\r')token.pop_back();
+            converted+=token+L"("+line.substr(pos+1,second-pos-1)+L")";
+            if(next==std::wstring::npos)break;
+            pos=next;
+        }
+        if(valid)qrc+=converted+L"\n";
+    }
+    return ParseWordLyrics(qrc);
+}
+static bool LyricNumericId(const std::wstring& id) {
+    return !id.empty() && id.size()<=20 &&
+        std::all_of(id.begin(),id.end(),[](wchar_t c){return c>=L'0'&&c<=L'9';});
+}
+static std::wstring ExtractPlayerSongId(PlayerSource source, const std::vector<std::wstring>& genres) {
+    const wchar_t* prefix=source==PlayerSource::Netease?L"NCM-":source==PlayerSource::QQ?L"QQ-":nullptr;
+    if(!prefix)return {};
+    size_t size=wcslen(prefix);
+    for(const auto& genre:genres) {
+        if(genre.size()<=size)continue;
+        bool matches=true;
+        for(size_t i=0;i<size;++i) if(towupper(genre[i])!=prefix[i])matches=false;
+        if(matches) {
+            auto id=genre.substr(size);
+            if(source==PlayerSource::Netease && !LyricNumericId(id))continue;
+            if(id.size()<=64 && std::all_of(id.begin(),id.end(),[](wchar_t c){return (c>=L'0'&&c<=L'9')||(c>=L'a'&&c<=L'z')||(c>=L'A'&&c<=L'Z');}))return id;
+        }
+    }
+    return {};
+}
+static std::vector<LyricLine> FetchNeteaseLyrics(const std::wstring& id) {
+    using namespace winrt::Windows::Data::Json;
+    if(!LyricNumericId(id)||g_unloading)return {};
+    try {
+        JsonObject request;
+        request.SetNamedValue(L"id",JsonValue::CreateStringValue(id));
+        request.SetNamedValue(L"cp",JsonValue::CreateStringValue(L"false"));
+        for(const auto* key:{L"lv",L"kv",L"tv",L"rv",L"yv",L"ytv",L"yrv"})
+            request.SetNamedValue(key,JsonValue::CreateStringValue(L"0"));
+        auto response=DownloadNetease(L"/api/song/lyric/v1",request);
+        if(response.empty())return {};
+        auto json=JsonObject::Parse(response);
+        if(json.HasKey(L"yrc")) {
+            auto yrc=ParseYrcLyrics(std::wstring(json.GetNamedObject(L"yrc").GetNamedString(L"lyric",L"")));
+            if(!yrc.empty())return yrc;
+        }
+        if(json.HasKey(L"lrc"))return ParseWordLyrics(std::wstring(json.GetNamedObject(L"lrc").GetNamedString(L"lyric",L"")));
+    }catch(...){Wh_Log(L"Lyrics: Netease lyric request failed");}
+    return {};
+}
+static std::vector<LyricLine> ResolveNeteaseLyrics(const std::wstring& title,const std::wstring& artist,double duration,const std::wstring& id=L"") {
+    using namespace winrt::Windows::Data::Json;
+    auto direct=FetchNeteaseLyrics(id);
+    if(!direct.empty())return direct;
+    if(title.empty()||artist.empty()||g_unloading)return {};
+    try {
+        JsonObject request;
+        request.SetNamedValue(L"s",JsonValue::CreateStringValue(title+L" "+artist));
+        for(const auto& item:{std::pair{L"type",L"1"},{L"limit",L"10"},{L"offset",L"0"},{L"total",L"true"}})
+            request.SetNamedValue(item.first,JsonValue::CreateStringValue(item.second));
+        auto response=DownloadNetease(L"/api/cloudsearch/pc",request);
+        if(response.empty())return {};
+        auto json=JsonObject::Parse(response);
+        auto songs=json.GetNamedObject(L"result").GetNamedArray(L"songs");
+        for(auto value:songs) {
+            auto song=value.GetObject();
+            if(LyricIdentity(std::wstring(song.GetNamedString(L"name",L"")))!=LyricIdentity(title))continue;
+            auto singers=song.GetNamedArray(song.HasKey(L"ar")?L"ar":L"artists");
+            std::wstring candidateArtists;
+            for(auto singer:singers) {
+                if(!candidateArtists.empty())candidateArtists+=L"/";
+                candidateArtists+=singer.GetObject().GetNamedString(L"name",L"");
+            }
+            if(!LyricArtistsEquivalent(artist,candidateArtists))continue;
+            double seconds=song.GetNamedNumber(song.HasKey(L"dt")?L"dt":L"duration",0)/1000;
+            if(duration>0&&seconds>0&&std::abs(seconds-duration)>8)continue;
+            auto lyrics=FetchNeteaseLyrics(std::to_wstring((uint64_t)song.GetNamedNumber(L"id",0)));
+            if(!lyrics.empty())return lyrics;
+            break; // Only download one verified recording per search.
+        }
+    }catch(...){Wh_Log(L"Lyrics: Netease search failed");}
+    return {};
+}
+static std::vector<LyricLine> ResolveQqLyrics(const std::wstring& title, const std::wstring& artist, double duration) {
+    using namespace winrt::Windows::Data::Json;
+    try {
+        auto response = DownloadLyrics(L"/soso/fcgi-bin/search_for_qq_cp?format=json&n=10&p=1&t=0&remoteplace=txt.yqq.song&platform=yqq.json&w="
+            + LyricUrlEncode(title + L" " + artist), L"c.y.qq.com");
+        if (response.empty() || g_unloading) return {};
+        auto json = JsonObject::Parse(response);
+        auto candidates = json.GetNamedObject(L"data").GetNamedObject(L"song").GetNamedArray(L"list");
+        std::wstring wantedTitle = LyricIdentity(title);
+        for (auto value : candidates) {
+            auto song = value.GetObject();
+            if (LyricIdentity(std::wstring(song.GetNamedString(L"songname", L""))) != wantedTitle) continue;
+            std::wstring candidateArtists;
+            for (auto singer : song.GetNamedArray(L"singer")) {
+                if (!candidateArtists.empty()) candidateArtists += L"/";
+                candidateArtists += singer.GetObject().GetNamedString(L"name", L"");
+            }
+            if (!LyricArtistsEquivalent(artist,candidateArtists)) continue;
+            double candidateDuration = song.GetNamedNumber(L"interval", 0);
+            if (duration > 61 && candidateDuration > 0 && std::abs(candidateDuration - duration) > 8) continue;
+            double songId = song.GetNamedNumber(L"songid", 0);
+            if (songId > 0) {
+                std::string qrcForm = "version=15&miniversion=100&lrctype=4&musicid=" + std::to_string((uint64_t)songId);
+                auto xml = DownloadLyrics(L"/qqmusic/fcgi-bin/lyric_download.fcg", L"c.y.qq.com", qrcForm);
+                auto qrc = ParseWordLyrics(QrcContent(xml));
+                if (!qrc.empty()) return qrc;
+                if (g_unloading) return {};
+            }
+            auto mid = song.GetNamedString(L"songmid", L"");
+            if (mid.empty()) continue;
+            std::wstring encoded = LyricUrlEncode(std::wstring(mid));
+            std::string form = "format=json&inCharset=utf8&outCharset=utf8&platform=yqq&g_tk=5381&songmid=";
+            form.append(encoded.begin(), encoded.end());
+            auto lyricResponse = DownloadLyrics(L"/lyric/fcgi-bin/fcg_query_lyric_new.fcg", L"c.y.qq.com", form);
+            if (lyricResponse.empty() || g_unloading) return {};
+            auto lyric = JsonObject::Parse(lyricResponse);
+            auto lines = ParseWordLyrics(LyricUnescape(LyricBase64(std::wstring(lyric.GetNamedString(L"lyric", L"")))));
+            if (!lines.empty()) return lines;
+        }
+    } catch (...) { Wh_Log(L"Lyrics: QQ Music lookup failed"); }
+    return {};
+}
+static std::vector<LyricLine> ResolveLyrics(const std::wstring& folder, bool online,
+    const std::wstring& title, const std::wstring& artist, const std::wstring& album, double duration,
+    PlayerSource source = PlayerSource::Other, const std::wstring& songId = L"") {
+    if (!folder.empty()) {
+        for (const auto& name : {artist + L" - " + title, title + L" - " + artist, title}) {
+          for (const auto& extension : {L".qrc", L".lrc", L".yrc"}) {
+            std::wstring path = folder + L"\\" + LyricSafeFilename(name) + extension;
+            HANDLE file = CreateFileW(path.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
+                nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+            if (file == INVALID_HANDLE_VALUE) continue;
+            LARGE_INTEGER size{};
+            std::string bytes;
+            if (GetFileSizeEx(file, &size) && size.QuadPart > 0 && size.QuadPart <= 2 * 1024 * 1024) {
+                bytes.resize((size_t)size.QuadPart); DWORD read = 0;
+                if (!ReadFile(file, bytes.data(), (DWORD)bytes.size(), &read, nullptr)) bytes.clear();
+                else bytes.resize(read);
+            }
+            CloseHandle(file);
+            auto text = LyricUtf8(bytes);
+            auto lines = wcscmp(extension,L".yrc") == 0 ? ParseYrcLyrics(text) : ParseWordLyrics(text);
+            if (!lines.empty()) return lines;
+          }
+        }
+    }
+    if (!online || g_unloading) return {};
+    if (source == PlayerSource::Netease) {
+        auto netease = ResolveNeteaseLyrics(title, artist, duration, songId);
+        if (!netease.empty()) return netease;
+    }
+    if (source == PlayerSource::QQ && LyricNumericId(songId)) {
+        auto xml = DownloadLyrics(L"/qqmusic/fcgi-bin/lyric_download.fcg", L"c.y.qq.com",
+            "version=15&miniversion=100&lrctype=4&musicid=" + LyricUtf8Bytes(songId));
+        auto direct = ParseWordLyrics(QrcContent(xml));
+        if (!direct.empty()) return direct;
+    }
+    if (artist.empty()) return {};
+    auto qqLines = ResolveQqLyrics(title, artist, duration);
+    if (!qqLines.empty()) return qqLines;
+    if (source != PlayerSource::Netease) {
+        auto netease = ResolveNeteaseLyrics(title, artist, duration);
+        if (!netease.empty()) return netease;
+    }
+    if (duration <= 0) return {};
+    // Exact metadata endpoint avoids displaying a different recording from a fuzzy search.
+    std::wstring path = L"/api/get?track_name=" + LyricUrlEncode(title) + L"&artist_name=" + LyricUrlEncode(artist)
+        + L"&album_name=" + LyricUrlEncode(album) + L"&duration=" + std::to_wstring((int)std::llround(duration));
+    try {
+        auto response = DownloadLyrics(path);
+        if (response.empty()) return {};
+        auto json = winrt::Windows::Data::Json::JsonObject::Parse(response);
+        auto text = json.Lookup(L"syncedLyrics");
+        if (text.ValueType() == winrt::Windows::Data::Json::JsonValueType::String)
+            return ParseWordLyrics(std::wstring(text.GetString()));
+    } catch (...) { Wh_Log(L"Lyrics: unavailable or invalid LRCLIB response"); }
+    return {};
+}
+static std::wstring CurrentLyric(const std::wstring& title, const std::wstring& artist) {
+    if (!g_lyricsEnabled) return {};
+    std::lock_guard<std::mutex> lock(g_lyricsMtx);
+    return title == g_lyricTitle && artist == g_lyricArtist ? g_lyricText : L"";
+}
+static HANDLE g_lyricsThread = nullptr;
+static HANDLE g_lyricsStop = nullptr;
+static DWORD WINAPI LyricsThreadProc(void*) {
+    try { winrt::init_apartment(winrt::apartment_type::multi_threaded); } catch (...) { return 0; }
+    std::wstring identity;
+    ULONGLONG retryAt = 0;
+    std::vector<LyricLine> lines;
+    // Bounded successful-result cache; misses retry after 30 seconds.
+    PlayerTimelineSmoother smoother;
+    std::list<std::pair<std::wstring, std::vector<LyricLine>>> cache;
+    while (!g_unloading && WaitForSingleObject(g_lyricsStop, 200) == WAIT_TIMEOUT) {
+        try {
+            GlobalSystemMediaTransportControlsSession session{nullptr};
+            { std::lock_guard<std::mutex> lock(g_sessionMtx); session = g_currentSession; }
+            std::wstring title, artist, app, folder, key, display;
+            LyricFrame frame;
+            if (session && g_lyricsEnabled) {
+                auto readProps = [&]() {
+                    auto op = session.TryGetMediaPropertiesAsync();
+                    const ULONGLONG deadline = GetTickCount64() + 2000;
+                    while (op.Status() == winrt::Windows::Foundation::AsyncStatus::Started) {
+                        if (WaitForSingleObject(g_lyricsStop, 50) == WAIT_OBJECT_0 || GetTickCount64() >= deadline) {
+                            op.Cancel();
+                            winrt::throw_hresult(E_ABORT);
+                        }
+                    }
+                    return op.GetResults();
+                };
+                auto props = readProps();
+                title = props.Title(); artist = props.Artist(); app = session.SourceAppUserModelId();
+                PlayerSource source = ClassifyPlayerSource(app);
+                std::wstring lookupArtist = artist.empty() ? std::wstring(props.AlbumArtist()) : artist;
+                std::vector<std::wstring> genres;
+                for (auto const& genre : props.Genres()) genres.emplace_back(genre);
+                std::wstring songId = ExtractPlayerSongId(source, genres);
+                auto timeline = session.GetTimelineProperties();
+                double duration = (timeline.EndTime() - timeline.StartTime()).count() / 10000000.0;
+                bool online = g_lyricsOnline;
+                { std::lock_guard<std::mutex> lock(g_lyricsMtx); folder = g_lyricsFolder; }
+                key = app + L"\n" + title + L"\n" + artist + L"\n" + std::wstring(props.AlbumTitle())
+                    + L"\n" + folder + (online ? L"\n1" : L"\n0") + L"\n" + std::to_wstring((int)duration)
+                    + L"\n" + lookupArtist + L"\n" + songId;
+                if (key != identity || (lines.empty() && GetTickCount64() >= retryAt)) {
+                    identity = key; lines.clear();
+                    // Clear the previous track before doing any network I/O.
+                    {
+                        std::lock_guard<std::mutex> lock(g_lyricsMtx);
+                        g_lyricText.clear();
+                        g_lyricFrame = {title, artist, app, L"正在获取歌词…"};
+                    }
+                    g_needsUiUpdate = true;
+                    auto hit = std::find_if(cache.begin(), cache.end(), [&](auto& entry) { return entry.first == key; });
+                    if (hit != cache.end()) lines = hit->second;
+                    else if (!title.empty()) {
+                        lines = ResolveLyrics(folder, online, title, lookupArtist, std::wstring(props.AlbumTitle()), duration, source, songId);
+                        if (!lines.empty()) cache.emplace_front(key, lines);
+                        if (cache.size() > 64) cache.pop_back();
+                    }
+                    retryAt = GetTickCount64() + 30000;
+                    auto latest = readProps();
+                    if (latest.Title() != props.Title() || latest.Artist() != props.Artist()) {
+                        identity.clear();
+                        continue;
+                    }
+                    // Re-read the timeline after the fetch; downloading may take seconds.
+                    timeline = session.GetTimelineProperties();
+                }
+                if (!lines.empty()) {
+                    auto rawPosition = (timeline.Position() - timeline.StartTime()).count() / 10000;
+                    auto info = session.GetPlaybackInfo();
+                    bool playing = info.PlaybackStatus() == GlobalSystemMediaTransportControlsSessionPlaybackStatus::Playing;
+                    auto rate = info.PlaybackRate();
+                    double playbackRate = rate && std::isfinite(rate.Value()) ? std::clamp(rate.Value(),0.0,4.0) : 1.0;
+                    uint64_t sampledAt = GetTickCount64();
+                    int64_t position = (int64_t)smoother.Select(source, app+L"\n"+title+L"\n"+artist,
+                        rawPosition, timeline.LastUpdatedTime().time_since_epoch().count()/10000,
+                        winrt::clock::now().time_since_epoch().count()/10000, sampledAt, playing, playbackRate);
+                    position = std::max<int64_t>(position,0);
+                    if (duration > 0) position = std::min<int64_t>(position,(int64_t)(duration*1000));
+                    position += g_lyricsOffsetMs.load() + GetSourceConfig(source).offsetMs;
+                    auto next = std::upper_bound(lines.begin(), lines.end(), position,
+                        [](int64_t ms, const LyricLine& line) { return ms < line.ms; });
+                    if (next != lines.begin()) {
+                        auto& line = *std::prev(next);
+                        display = line.text;
+                        frame.words = line.words;
+                    }
+                    if (next != lines.end()) frame.next = next->text;
+                    frame.position = position;
+                    frame.rate = playing ? playbackRate : 0;
+                    frame.sampledAt = sampledAt;
+                }
+                // Drop results if the selected media session changed while we were waiting.
+                { std::lock_guard<std::mutex> lock(g_sessionMtx); if (session != g_currentSession) continue; }
+            } else { identity.clear(); lines.clear(); smoother = {}; }
+            bool changed;
+            {
+                std::lock_guard<std::mutex> lock(g_lyricsMtx);
+                changed = g_lyricText != display || g_lyricTitle != title || g_lyricArtist != artist || g_lyricApp != app;
+                g_lyricTitle = title; g_lyricArtist = artist; g_lyricApp = app; g_lyricText = display;
+                frame.title = title; frame.artist = artist; frame.app = app;
+                frame.text = display.empty() ? (title.empty() ? L"暂无播放" : (lines.empty() ? L"暂未找到歌词" : L"♪")) : display;
+                frame.hasLyrics = !lines.empty();
+                g_lyricFrame = std::move(frame);
+            }
+            if (changed) g_needsUiUpdate = true;
+        } catch (...) {
+            { std::lock_guard<std::mutex> lock(g_lyricsMtx); g_lyricText.clear(); g_lyricFrame = {}; }
+            g_needsUiUpdate = true;
+        }
+    }
+    winrt::uninit_apartment();
+    return 0;
+}
 static void StartMediaThread() {
     if (g_mediaThread) return;
     g_mediaStopEvent = CreateEventW(nullptr, TRUE, FALSE, nullptr);
     if (!g_mediaStopEvent) return;
     g_mediaThread = CreateThread(nullptr, 0, MediaThreadProc, nullptr, 0, nullptr);
-    if (!g_mediaThread) { CloseHandle(g_mediaStopEvent); g_mediaStopEvent = nullptr; }
+    if (!g_mediaThread) { CloseHandle(g_mediaStopEvent); g_mediaStopEvent = nullptr; return; }
+    g_lyricsStop = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+    if (g_lyricsStop) {
+        g_lyricsThread = CreateThread(nullptr, 0, LyricsThreadProc, nullptr, 0, nullptr);
+        if (!g_lyricsThread) { CloseHandle(g_lyricsStop); g_lyricsStop = nullptr; }
+    }
 }
 static void StopMediaThread() {
+    if (g_lyricsStop) SetEvent(g_lyricsStop);
+    if (g_lyricsThread) { WaitForSingleObject(g_lyricsThread, INFINITE); CloseHandle(g_lyricsThread); g_lyricsThread = nullptr; }
+    if (g_lyricsStop) { CloseHandle(g_lyricsStop); g_lyricsStop = nullptr; }
     if (g_mediaStopEvent) SetEvent(g_mediaStopEvent);
     if (g_mediaThread) { WaitForSingleObject(g_mediaThread, 5000); CloseHandle(g_mediaThread); g_mediaThread = nullptr; }
     if (g_mediaStopEvent) { CloseHandle(g_mediaStopEvent); g_mediaStopEvent = nullptr; }
@@ -4288,6 +6211,7 @@ static void DispatchMediaUpdate() {
         SetEvent(g_timerUpdateEvent);
     }
 
+
     if (g_miniPlayerFlyoutOpen && g_taskbarWnd) {
         if (!g_settings.hideMediaSessionsList)
             FetchMiniSessionInfosAsync(g_taskbarWnd);
@@ -4303,6 +6227,8 @@ static void RefreshThemeColors();
 static void RemovePlayerGrid();
 static bool InjectPlayerGrid();
 static std::atomic<bool> g_themeChangePending{false};
+static void UpdateSecondaryMediaViews(bool missingOnly);
+static void RemoveAllSecondaryMediaViews();
 static DWORD WINAPI TimerThreadProc(void*) {
     static bool lastThemeWasLight = IsSystemLightTheme();
     HKEY hKey = nullptr;
@@ -4375,6 +6301,7 @@ static DWORD WINAPI TimerThreadProc(void*) {
                 needsUpdate    = true;
             }
         }
+        // Secondary UI is refreshed by its primary-dispatcher timer.
         if (needsUpdate) {
             RunFromWindowThread(hWnd, [](void*) {
                 if (g_unloading || g_applyingSettings) return;
@@ -5342,41 +7269,41 @@ static const wchar_t* GetGlyphWithStyle(int cmd, const std::wstring& style, bool
     bool isFilled = (style == L"fluent_filled" || style == L"mdl2_filled");
     switch (cmd) {
         case 1:
-            if (isFilled) return L"";
-            return L"";
+            if (isFilled) return L"";
+            return L"";
         case 2:
             if (isPlaying) {
-                if (isFluent && isFilled) return L"";
-                if (!isFluent && isFilled) return L"";
-                return L"";
+                if (isFluent && isFilled) return L"";
+                if (!isFluent && isFilled) return L"";
+                return L"";
             } else {
-                if (isFilled) return L"";
-                return L"";
+                if (isFilled) return L"";
+                return L"";
             }
         case 3:
-            if (isFilled) return L"";
-            return L"";
+            if (isFilled) return L"";
+            return L"";
         case 5:
-            if (isFilled) return L"";
-            return L"";
+            if (isFilled) return L"";
+            return L"";
         case 6:
-            if (isFilled) return L"";
-            return L"";
+            if (isFilled) return L"";
+            return L"";
         case 7:
-            return L"";
+            return L"";
         case 8: {
             RepeatMode mode = g_repeatMode.load();
             switch (mode) {
-                case RepeatMode::Off: return L"";
-                case RepeatMode::All: return L"";
-                case RepeatMode::One: return L"";
+                case RepeatMode::Off: return L"";
+                case RepeatMode::All: return L"";
+                case RepeatMode::One: return L"";
             }
         }
         case 9:
-            return L"";
-        case 10: return L"";
-        case 11: return L"";
-        case 12: return L"";
+            return L"";
+        case 10: return L"";
+        case 11: return L"";
+        case 12: return L"";
     }
     return L"";
 }
@@ -5447,16 +7374,20 @@ static Button MakeControlButton(int cmd, bool isPlaying, winrt::Windows::UI::Col
         });
         ApplyFluentMediaButtonStyle(btn);
 
+
         auto isPressed = std::make_shared<bool>(false);
         auto isHovered = std::make_shared<bool>(false);
+
 
         auto updateBtnVisualState = [btn, isPressed, isHovered]() {
             try {
                 GoToCommonState(btn, IsHoverEffectEnabled(g_settings.mediaButtonsHoverEffectMode), *isPressed, *isHovered);
             } catch (...) {
 
+
             }
         };
+
 
         RunWhenButtonReady(btn, [btn, updateBtnVisualState]() {
             try {
@@ -5467,15 +7398,18 @@ static Button MakeControlButton(int cmd, bool isPlaying, winrt::Windows::UI::Col
             }
         });
 
+
         btn.PointerEntered([isHovered, updateBtnVisualState](auto const&, auto const&) {
             *isHovered = true;
             updateBtnVisualState();
         });
 
+
         btn.PointerExited([isHovered, updateBtnVisualState](auto const&, auto const&) {
             *isHovered = false;
             updateBtnVisualState();
         });
+
 
         btn.AddHandler(UIElement::PointerPressedEvent(), winrt::box_value(
             winrt::Windows::UI::Xaml::Input::PointerEventHandler(
@@ -5487,10 +7421,12 @@ static Button MakeControlButton(int cmd, bool isPlaying, winrt::Windows::UI::Col
             updateBtnVisualState();
         })), true);
 
+
         btn.AddHandler(UIElement::PointerReleasedEvent(), winrt::box_value(
             winrt::Windows::UI::Xaml::Input::PointerEventHandler(
             [isPressed, isHovered, updateBtnVisualState](auto const& sender, winrt::Windows::UI::Xaml::Input::PointerRoutedEventArgs const& e) {
             bool actuallyHovered = false;
+
 
             if (auto elem = sender.template try_as<UIElement>()) {
                 elem.ReleasePointerCapture(e.Pointer());
@@ -5506,11 +7442,13 @@ static Button MakeControlButton(int cmd, bool isPlaying, winrt::Windows::UI::Col
             e.Handled(true);
         })), true);
 
+
         btn.PointerCanceled([isPressed, isHovered, updateBtnVisualState](auto const&, auto const&) {
             *isPressed = false;
             *isHovered = false;
             updateBtnVisualState();
         });
+
 
         btn.PointerCaptureLost([isPressed, isHovered, updateBtnVisualState](auto const& sender, winrt::Windows::UI::Xaml::Input::PointerRoutedEventArgs const& e) {
             if (auto elem = sender.template try_as<UIElement>()) {
@@ -5832,6 +7770,7 @@ static void ShowMediaContextMenu(FrameworkElement const& target) {
             (float)target.ActualHeight() + 8.f
         });
 
+
         menu.Closed([](auto const&, auto const&) {
             try {
                 if (g_playerButtonStateUpdater) {
@@ -5861,6 +7800,7 @@ static void ShowMediaContextMenu(FrameworkElement const& target) {
     }
 }
 
+
 [[clang::no_destroy]] static winrt::Windows::UI::Xaml::Controls::Flyout g_miniPlayerFlyout{nullptr};
 [[clang::no_destroy]] static Controls::Image g_miniPlayerArtRef{nullptr};
 [[clang::no_destroy]] static TextBlock       g_miniPlayerTitleRef{nullptr};
@@ -5873,6 +7813,7 @@ static void ShowMediaContextMenu(FrameworkElement const& target) {
 [[clang::no_destroy]] static StackPanel      g_miniPlayerSessionListRef{nullptr};
 [[clang::no_destroy]] static Border          g_miniPlayerSessionListSepRef{nullptr};
 
+
 struct MiniSessionInfo {
     std::wstring id;
     std::wstring title;
@@ -5884,6 +7825,7 @@ static std::mutex                   g_miniSessionMtx;
 static std::vector<BYTE> g_miniPlayerCachedThumb;
 static std::vector<size_t> g_miniSessionCachedThumbSizes;
 static std::atomic<int> g_miniSessionHoveredIndex{-1};
+
 
 static void LoadMiniPlayerArtBitmap(Controls::Image const& img, std::vector<BYTE> const& thumbBytes) {
     if (!img || thumbBytes.empty()) return;
@@ -5906,7 +7848,9 @@ static void LoadMiniPlayerArtBitmap(Controls::Image const& img, std::vector<BYTE
     } catch (...) {}
 }
 
+
 static std::vector<std::shared_ptr<std::atomic<bool>>> g_miniSessionCurrentFlags;
+
 
 static void RefreshMiniPlayerFlyoutUI() {
     if (!g_miniPlayerFlyoutOpen) return;
@@ -5958,10 +7902,12 @@ static void RefreshMiniPlayerFlyoutUI() {
             trimmedArtist.erase(trimmedArtist.find_last_not_of(L" \t\n\r") + 1);
             bool isEmpty = trimmedArtist.empty();
 
+
             winrt::hstring newArtist = isEmpty ? winrt::hstring(L"") : winrt::hstring(artist);
             g_miniPlayerArtistRef.Text(newArtist);
             g_miniPlayerArtistRef.Visibility(isEmpty ? Visibility::Collapsed : Visibility::Visible);
         }
+
 
         if (g_miniPlayerPlayBtnRef) {
             g_miniPlayerPlayBtnRef.IsEnabled(hasMedia);
@@ -5972,17 +7918,20 @@ static void RefreshMiniPlayerFlyoutUI() {
             }
         }
 
+
         if (g_miniPlayerPrevBtnRef) {
             bool enabled = hasMedia && canSkipPrevious;
             g_miniPlayerPrevBtnRef.IsEnabled(enabled);
             g_miniPlayerPrevBtnRef.Opacity(enabled ? 1.0 : 0.35);
         }
 
+
         if (g_miniPlayerNextBtnRef) {
             bool enabled = hasMedia && canSkipNext;
             g_miniPlayerNextBtnRef.IsEnabled(enabled);
             g_miniPlayerNextBtnRef.Opacity(enabled ? 1.0 : 0.35);
         }
+
 
         if (g_miniPlayerShuffleBtnRef) {
             bool enabled = hasMedia && canShuffle;
@@ -5991,6 +7940,7 @@ static void RefreshMiniPlayerFlyoutUI() {
                 icon.Opacity(enabled && g_shuffleEnabled.load() ? 1.0 : 0.40);
             }
         }
+
 
         if (g_miniPlayerRepeatBtnRef) {
             bool enabled = hasMedia && canRepeat;
@@ -6002,6 +7952,7 @@ static void RefreshMiniPlayerFlyoutUI() {
                 icon.Opacity(enabled && mode != RepeatMode::Off ? 1.0 : 0.40);
             }
         }
+
 
         if (g_miniPlayerArtRef) {
             bool sameThumb = (!thumbBytes.empty() && thumbBytes == g_miniPlayerCachedThumb);
@@ -6021,6 +7972,7 @@ static void RefreshMiniPlayerFlyoutUI() {
                 infos = g_miniSessionInfos;
             }
 
+
             bool noMusic = (!hasMedia || title.empty()) && infos.empty();
             bool hasOtherSessions = !infos.empty();
             if (g_miniPlayerSessionListSepRef) {
@@ -6028,10 +7980,12 @@ static void RefreshMiniPlayerFlyoutUI() {
                     (noMusic || !hasOtherSessions || g_settings.hideMediaSessionsList) ? Visibility::Collapsed : Visibility::Visible);
             }
 
+
             if (g_miniPlayerSessionListRef) {
                 auto sessionList = g_miniPlayerSessionListRef;
                 Visibility listVisibility = (noMusic || !hasOtherSessions) ? Visibility::Collapsed : Visibility::Visible;
                 sessionList.Visibility(listVisibility);
+
 
                 uint32_t childCount = sessionList.Children().Size();
                 if (infos.empty() || childCount != infos.size()) {
@@ -6142,9 +8096,11 @@ static void RefreshMiniPlayerFlyoutUI() {
     } catch (...) {}
 }
 
+
 static void AnimateSessionPill(winrt::Windows::UI::Xaml::Shapes::Rectangle const& pill, bool isCurrent, bool animate) {
     using namespace winrt::Windows::UI::Xaml::Media;
     using namespace winrt::Windows::UI::Xaml::Media::Animation;
+
 
     if (isCurrent) {
         try {
@@ -6161,12 +8117,14 @@ static void AnimateSessionPill(winrt::Windows::UI::Xaml::Shapes::Rectangle const
         }
     }
 
+
     auto st = pill.RenderTransform().try_as<ScaleTransform>();
     if (!st) {
         st = ScaleTransform();
         pill.RenderTransformOrigin({0.5, 0.5});
         pill.RenderTransform(st);
     }
+
 
     if (!animate) {
         pill.Opacity(isCurrent ? 1.0 : 0.0);
@@ -6175,13 +8133,16 @@ static void AnimateSessionPill(winrt::Windows::UI::Xaml::Shapes::Rectangle const
         return;
     }
 
+
     if (isCurrent) {
         pill.Opacity(0.0);
         st.ScaleX(1.0);
         st.ScaleY(0.0);
 
+
         try {
             Storyboard sb;
+
 
             DoubleAnimation fadeAnim;
             fadeAnim.From(0.0);
@@ -6203,6 +8164,7 @@ static void AnimateSessionPill(winrt::Windows::UI::Xaml::Shapes::Rectangle const
                 L"(UIElement.RenderTransform).(ScaleTransform.ScaleY)");
             sb.Children().Append(scaleAnim);
 
+
             sb.Begin();
         } catch (...) {
             pill.Opacity(1.0);
@@ -6212,6 +8174,7 @@ static void AnimateSessionPill(winrt::Windows::UI::Xaml::Shapes::Rectangle const
     } else {
         try {
             Storyboard sb;
+
 
             DoubleAnimation scaleAnim;
             scaleAnim.To(0.0);
@@ -6224,6 +8187,7 @@ static void AnimateSessionPill(winrt::Windows::UI::Xaml::Shapes::Rectangle const
                 L"(UIElement.RenderTransform).(ScaleTransform.ScaleY)");
             sb.Children().Append(scaleAnim);
 
+
             DoubleAnimation fadeAnim;
             fadeAnim.To(0.0);
             fadeAnim.BeginTime(winrt::Windows::Foundation::TimeSpan(std::chrono::milliseconds(100)));
@@ -6231,6 +8195,7 @@ static void AnimateSessionPill(winrt::Windows::UI::Xaml::Shapes::Rectangle const
             Storyboard::SetTarget(fadeAnim, pill);
             Storyboard::SetTargetProperty(fadeAnim, L"Opacity");
             sb.Children().Append(fadeAnim);
+
 
             sb.Begin();
         } catch (...) {
@@ -6241,8 +8206,10 @@ static void AnimateSessionPill(winrt::Windows::UI::Xaml::Shapes::Rectangle const
     }
 }
 
+
 static Button BuildSessionRowButton(const MiniSessionInfo& info, bool isCurrent, HWND taskbarWnd, int rowIndex) {
     bool isLight = IsSystemLightTheme();
+
 
     winrt::Windows::UI::Color bgSelected    = isLight
         ? winrt::Windows::UI::Color{0x20, 0x00, 0x00, 0x00}
@@ -6250,12 +8217,14 @@ static Button BuildSessionRowButton(const MiniSessionInfo& info, bool isCurrent,
     winrt::Windows::UI::Color bgUnselected  = winrt::Windows::UI::Color{0x00, 0x00, 0x00, 0x00};
     winrt::Windows::UI::Color bgNormal = isCurrent ? bgSelected : bgUnselected;
 
+
     winrt::Windows::UI::Color bgHover = isLight 
         ? winrt::Windows::UI::Color{0x0E, 0x00, 0x00, 0x00}
         : winrt::Windows::UI::Color{0x14, 0xFF, 0xFF, 0xFF};
     winrt::Windows::UI::Color bgPressed = isLight 
         ? winrt::Windows::UI::Color{0x18, 0x00, 0x00, 0x00}
         : winrt::Windows::UI::Color{0x20, 0xFF, 0xFF, 0xFF};
+
 
     auto isCurrentFlag = std::make_shared<std::atomic<bool>>(isCurrent);
     {
@@ -6265,6 +8234,7 @@ static Button BuildSessionRowButton(const MiniSessionInfo& info, bool isCurrent,
         }
         g_miniSessionCurrentFlags[rowIndex] = isCurrentFlag;
     }
+
 
     Border hoverBorder;
     hoverBorder.CornerRadius({4, 4, 4, 4});
@@ -6278,6 +8248,7 @@ static Button BuildSessionRowButton(const MiniSessionInfo& info, bool isCurrent,
         hoverBorder.BackgroundTransition(bt);
     } catch (...) {}
 
+
     Grid rowGrid;
     rowGrid.Height(48);
     rowGrid.HorizontalAlignment(HorizontalAlignment::Stretch);
@@ -6289,6 +8260,7 @@ static Button BuildSessionRowButton(const MiniSessionInfo& info, bool isCurrent,
     rowGrid.ColumnDefinitions().Append(c0);
     rowGrid.ColumnDefinitions().Append(c1);
 
+
     {
         winrt::Windows::UI::Xaml::Shapes::Rectangle pill;
         pill.Width(3);
@@ -6299,6 +8271,7 @@ static Button BuildSessionRowButton(const MiniSessionInfo& info, bool isCurrent,
         pill.VerticalAlignment(VerticalAlignment::Center);
         pill.HorizontalAlignment(HorizontalAlignment::Left);
 
+
         AnimateSessionPill(pill, isCurrent, /*animate*/ false);
         if (isCurrent) {
             pill.Loaded([pill](auto const&, auto const&) {
@@ -6306,9 +8279,11 @@ static Button BuildSessionRowButton(const MiniSessionInfo& info, bool isCurrent,
             });
         }
 
+
         Grid::SetColumn(pill, 0);
         rowGrid.Children().Append(pill);
     }
+
 
     Border rowArt;
     rowArt.Width(32); rowArt.Height(32);
@@ -6342,12 +8317,14 @@ static Button BuildSessionRowButton(const MiniSessionInfo& info, bool isCurrent,
     Grid::SetColumn(rowArt, 1);
     rowGrid.Children().Append(rowArt);
 
+
     StackPanel rowText;
     rowText.Orientation(Orientation::Vertical);
     rowText.VerticalAlignment(VerticalAlignment::Center);
     rowText.HorizontalAlignment(HorizontalAlignment::Left);
     rowText.Margin({8, 0, 0, 0});
     rowText.MaxWidth(240);
+
 
     std::wstring displayTitle = info.title.empty() ? info.id : info.title;
     TextBlock rowTitle;
@@ -6362,6 +8339,7 @@ static Button BuildSessionRowButton(const MiniSessionInfo& info, bool isCurrent,
         ? winrt::Windows::UI::Color{0xFF, 0x10, 0x10, 0x10}
         : winrt::Windows::UI::Color{0xFF, 0xFF, 0xFF, 0xFF}));
     rowText.Children().Append(rowTitle);
+
 
     if (!info.artist.empty()) {
         TextBlock rowArtist;
@@ -6379,6 +8357,7 @@ static Button BuildSessionRowButton(const MiniSessionInfo& info, bool isCurrent,
         rowText.Children().Append(rowArtist);
     }
 
+
     if (g_settings.showMiniPlayerBorder) {
         rowArt.BorderBrush(MakeBrush({0xFF, 0xFF, 0x40, 0x00}));
         rowArt.BorderThickness({1, 1, 1, 1});
@@ -6388,9 +8367,11 @@ static Button BuildSessionRowButton(const MiniSessionInfo& info, bool isCurrent,
         hoverBorder.BorderThickness({1, 1, 1, 1});
     }
 
+
     Grid::SetColumn(rowText, 2);
     rowGrid.Children().Append(rowText);
     hoverBorder.Child(rowGrid);
+
 
     Button rowBtn;
     rowBtn.HorizontalAlignment(HorizontalAlignment::Stretch);
@@ -6401,6 +8382,7 @@ static Button BuildSessionRowButton(const MiniSessionInfo& info, bool isCurrent,
     rowBtn.BorderThickness({0, 0, 0, 0});
     rowBtn.Background(MakeBrush({0x00, 0x00, 0x00, 0x00}));
     rowBtn.Content(hoverBorder);
+
 
     std::wstring capturedId = info.id;
     rowBtn.Click([capturedId](auto const&, auto const&) {
@@ -6437,7 +8419,9 @@ static Button BuildSessionRowButton(const MiniSessionInfo& info, bool isCurrent,
         });
     });
 
+
     ApplyFluentMediaButtonStyle(rowBtn);
+
 
     auto hBorderWeak  = winrt::make_weak(hoverBorder);
     auto brushSelected   = MakeBrush(bgSelected);
@@ -6447,6 +8431,7 @@ static Button BuildSessionRowButton(const MiniSessionInfo& info, bool isCurrent,
     auto restingBrush = [isCurrentFlag, brushSelected, brushUnselected]() {
         return isCurrentFlag->load() ? brushSelected : brushUnselected;
     };
+
 
     rowBtn.PointerEntered([hBorderWeak, brushHover, rowIndex](auto const&, auto const&) {
         g_miniSessionHoveredIndex.store(rowIndex);
@@ -6482,8 +8467,10 @@ static Button BuildSessionRowButton(const MiniSessionInfo& info, bool isCurrent,
         if (auto b = hBorderWeak.get()) b.Background(restingBrush());
     });
 
+
     return rowBtn;
 }
+
 
 static void FetchMiniSessionInfosAsync(HWND taskbarWnd) {
     SpawnTrackedWorker([taskbarWnd]() {
@@ -6538,6 +8525,7 @@ static void FetchMiniSessionInfosAsync(HWND taskbarWnd) {
         }
         winrt::uninit_apartment();
 
+
         if (taskbarWnd) {
             RunFromWindowThread(taskbarWnd, [](void*) {
                 if (!g_miniPlayerFlyoutOpen) return;
@@ -6547,11 +8535,13 @@ static void FetchMiniSessionInfosAsync(HWND taskbarWnd) {
     });
 }
 
+
 static Grid BuildMiniPlayerFlyoutContent() {
     Grid outer;
     outer.MinWidth(360);
     outer.MaxWidth(360);
     outer.MinHeight(400);
+
 
     bool isPlaying = false;
     bool hasMedia = false;
@@ -6572,12 +8562,15 @@ static Grid BuildMiniPlayerFlyoutContent() {
         thumbBytes      = g_media.thumbnailBytes;
     }
 
+
     Border bg;
     bg.CornerRadius({6, 6, 6, 6});
     bg.Padding({16, 16, 16, 0});
     bg.Margin({13, 13, 13, 13});
 
+
     bool isLight = IsSystemLightTheme();
+
 
     if (g_settings.showMiniPlayerBorder) {
         bg.BorderThickness({2, 2, 2, 2});
@@ -6591,6 +8584,7 @@ static Grid BuildMiniPlayerFlyoutContent() {
             : winrt::Windows::UI::Color{0x30, 0xFF, 0xFF, 0xFF}));
     }
 
+
     try {
         using namespace winrt::Windows::UI::Xaml::Media;
         ThemeShadow shadow;
@@ -6598,7 +8592,9 @@ static Grid BuildMiniPlayerFlyoutContent() {
         bg.Translation({0.f, 0.f, 32.f});
     } catch (...) {
 
+
     }
+
 
     Brush flyoutContentBackground{nullptr};
     try {
@@ -6625,9 +8621,11 @@ static Grid BuildMiniPlayerFlyoutContent() {
     }
     bg.Background(nullptr);
 
+
     StackPanel content;
     content.Orientation(Orientation::Vertical);
     content.HorizontalAlignment(HorizontalAlignment::Stretch);
+
 
     auto wrapDebugBorder = [](FrameworkElement const& elem, winrt::Windows::UI::Color color) -> FrameworkElement {
         if (!g_settings.showMiniPlayerBorder) return elem;
@@ -6640,6 +8638,7 @@ static Grid BuildMiniPlayerFlyoutContent() {
         wrapper.Children().Append(dbg);
         return wrapper;
     };
+
 
     Border artBorder;
     artBorder.MaxWidth(300);
@@ -6661,6 +8660,7 @@ static Grid BuildMiniPlayerFlyoutContent() {
         }
     }
 
+
     Grid artInnerGrid;
     artInnerGrid.HorizontalAlignment(HorizontalAlignment::Stretch);
     artInnerGrid.VerticalAlignment(VerticalAlignment::Stretch);
@@ -6680,6 +8680,7 @@ static Grid BuildMiniPlayerFlyoutContent() {
         artInnerGrid.Clip(clipGeo);
     }
 
+
     Controls::Image artImage;
     artImage.Stretch(Stretch::Uniform );
     artImage.HorizontalAlignment(HorizontalAlignment::Center);
@@ -6692,6 +8693,7 @@ static Grid BuildMiniPlayerFlyoutContent() {
     artInnerGrid.Children().Append(artImage);
     artBorder.Child(artInnerGrid);
     content.Children().Append(artBorder);
+
 
     TextBlock titleBlock;
     titleBlock.FontSize(16);
@@ -6715,6 +8717,7 @@ static Grid BuildMiniPlayerFlyoutContent() {
     }
     content.Children().Append(wrapDebugBorder(titleBlock, {0xFF, 0xFF, 0xFF, 0x00}));
 
+
     TextBlock artistBlock;
     artistBlock.FontSize(13);
     artistBlock.TextTrimming(TextTrimming::CharacterEllipsis);
@@ -6727,13 +8730,16 @@ static Grid BuildMiniPlayerFlyoutContent() {
     artistBlock.Text(artist.empty() ? winrt::hstring(L" ") : winrt::hstring(artist));
     content.Children().Append(wrapDebugBorder(artistBlock, {0xFF, 0x00, 0xFF, 0x00}));
 
+
     StackPanel controlsRow;
     controlsRow.Orientation(Orientation::Horizontal);
     controlsRow.HorizontalAlignment(HorizontalAlignment::Center);
     controlsRow.Spacing(4);
     controlsRow.Margin({0, 10, 0, 10});
 
+
     auto iconClr = ButtonColor();
+
 
     auto MakeBigBtn = [&](int cmd, bool playing, bool executeCommand = true) -> Button {
         Button btn;
@@ -6744,6 +8750,7 @@ static Grid BuildMiniPlayerFlyoutContent() {
         btn.BorderThickness({0,0,0,0});
         btn.VerticalAlignment(VerticalAlignment::Center);
         btn.HorizontalAlignment(HorizontalAlignment::Center);
+
 
         const wchar_t* glyph = L"";
         if (cmd == 1) glyph = L"\uE622";
@@ -6756,6 +8763,7 @@ static Grid BuildMiniPlayerFlyoutContent() {
                     mode == RepeatMode::All ? L"\uE8EE" : L"\uF5E7";
         }
 
+
         TextBlock iconText;
         iconText.Text(winrt::hstring(glyph));
         iconText.FontSize(16);
@@ -6766,6 +8774,7 @@ static Grid BuildMiniPlayerFlyoutContent() {
         if (cmd == 7) iconText.Opacity(g_shuffleEnabled.load() ? 1.0 : 0.40);
         if (cmd == 8) iconText.Opacity(g_repeatMode.load() != RepeatMode::Off ? 1.0 : 0.40);
         btn.Content(winrt::box_value(iconText));
+
 
         if (executeCommand) {
             btn.Click([cmd](auto const&, auto const&) {
@@ -6778,7 +8787,9 @@ static Grid BuildMiniPlayerFlyoutContent() {
             });
         }
 
+
         ApplyFluentMediaButtonStyle(btn);
+
 
         auto isHovered = std::make_shared<bool>(false);
         auto pressLocked = std::make_shared<bool>(false);
@@ -6827,11 +8838,13 @@ static Grid BuildMiniPlayerFlyoutContent() {
         return btn;
     };
 
+
     Button shuffleBtn = MakeBigBtn(7, false);
     Button prevBtn    = MakeBigBtn(1, false);
     Button playBtn    = MakeBigBtn(2, isPlaying);
     Button nextBtn    = MakeBigBtn(3, false);
     Button repeatBtn  = MakeBigBtn(8, false, false);
+
 
     shuffleBtn.IsEnabled(hasMedia && canShuffle);
     shuffleBtn.Opacity(hasMedia && canShuffle ? 1.0 : 0.35);
@@ -6844,12 +8857,14 @@ static Grid BuildMiniPlayerFlyoutContent() {
     repeatBtn.IsEnabled(hasMedia && canRepeat);
     repeatBtn.Opacity(hasMedia && canRepeat ? 1.0 : 0.35);
 
+
     ToolTip shuffleToolTip;
     shuffleToolTip.Content(winrt::box_value(winrt::hstring(L"Toggle Shuffle")));
     ToolTipService::SetToolTip(shuffleBtn, shuffleToolTip);
     ToolTip repeatToolTip;
     repeatToolTip.Content(winrt::box_value(winrt::hstring(L"Toggle Repeat")));
     ToolTipService::SetToolTip(repeatBtn, repeatToolTip);
+
 
     repeatBtn.Click([](auto const&, auto const&) {
         if (g_unloading) return;
@@ -6877,11 +8892,13 @@ static Grid BuildMiniPlayerFlyoutContent() {
         } catch (...) {}
     });
 
+
     controlsRow.Children().Append(shuffleBtn);
     controlsRow.Children().Append(prevBtn);
     controlsRow.Children().Append(playBtn);
     controlsRow.Children().Append(nextBtn);
     controlsRow.Children().Append(repeatBtn);
+
 
     if (g_settings.showMiniPlayerBorder) {
         prevBtn.BorderBrush(MakeBrush({0xFF, 0xFF, 0x40, 0x40}));
@@ -6892,7 +8909,9 @@ static Grid BuildMiniPlayerFlyoutContent() {
         nextBtn.BorderThickness({1, 1, 1, 1});
     }
 
+
     content.Children().Append(wrapDebugBorder(controlsRow, {0xFF, 0x00, 0x00, 0xFF}));
+
 
     {
         Border sep;
@@ -6907,6 +8926,7 @@ static Grid BuildMiniPlayerFlyoutContent() {
         content.Children().Append(sep);
     }
 
+
     if (!g_settings.hideMediaSessionsList) {
         StackPanel sessionList;
         sessionList.Orientation(Orientation::Vertical);
@@ -6919,21 +8939,25 @@ static Grid BuildMiniPlayerFlyoutContent() {
         g_miniPlayerSessionListRef = nullptr;
     }
 
+
     Grid bottomBar;
     Border bottomSep;
     {
         bool isLight = IsSystemLightTheme();
+
 
         bottomSep.Height(1);
         bottomSep.Background(MakeBrush(isLight
             ? winrt::Windows::UI::Color{0x20, 0x00, 0x00, 0x00}
             : winrt::Windows::UI::Color{0x20, 0xFF, 0xFF, 0xFF}));
 
+
         bottomBar.Margin({-16, 0, -16, -16});
         bottomBar.Padding({12, 6, 12, 6});
         bottomBar.Height(48);
         bottomBar.VerticalAlignment(VerticalAlignment::Bottom);
         bottomBar.CornerRadius({0, 0, 6, 6});
+
 
         try {
             AcrylicBrush bottomAcrylic;
@@ -6953,11 +8977,13 @@ static Grid BuildMiniPlayerFlyoutContent() {
                 : winrt::Windows::UI::Color{0xFF, 0x1C, 0x1C, 0x1C}));
         }
 
+
         StackPanel bottomRow;
         bottomRow.Orientation(Orientation::Horizontal);
         bottomRow.HorizontalAlignment(HorizontalAlignment::Right);
         bottomRow.VerticalAlignment(VerticalAlignment::Center);
         bottomRow.Spacing(2);
+
 
         auto MakeBottomBtn = [&](const wchar_t* glyph, std::wstring tooltip) -> Button {
             Button btn;
@@ -6967,6 +8993,7 @@ static Grid BuildMiniPlayerFlyoutContent() {
             btn.CornerRadius({4,4,4,4});
             btn.BorderThickness({0,0,0,0});
             btn.VerticalAlignment(VerticalAlignment::Center);
+
 
             TextBlock icon;
             icon.Text(winrt::hstring(glyph));
@@ -6979,11 +9006,13 @@ static Grid BuildMiniPlayerFlyoutContent() {
             icon.VerticalAlignment(VerticalAlignment::Center);
             btn.Content(winrt::box_value(icon));
 
+
             if (!tooltip.empty()) {
                 ToolTip tt;
                 tt.Content(winrt::box_value(winrt::hstring(tooltip)));
                 ToolTipService::SetToolTip(btn, tt);
             }
+
 
             ApplyFluentMediaButtonStyle(btn);
             auto isHovered = std::make_shared<bool>(false);
@@ -7025,17 +9054,21 @@ static Grid BuildMiniPlayerFlyoutContent() {
                 } catch (...) {}
             })), true);
 
+
             return btn;
         };
+
 
         Button settingsBtn = MakeBottomBtn(L"\uE713", L"Open Windhawk");
         settingsBtn.Click([](auto const&, auto const&) {
             OpenWindhawk();
         });
 
+
         bottomRow.Children().Append(settingsBtn);
         bottomBar.Children().Append(bottomRow);
     }
+
 
     Grid innerGrid;
     innerGrid.VerticalAlignment(VerticalAlignment::Stretch);
@@ -7046,8 +9079,10 @@ static Grid BuildMiniPlayerFlyoutContent() {
     innerGrid.RowDefinitions().Append(rowContent);
     innerGrid.RowDefinitions().Append(rowBottom);
 
+
     content.VerticalAlignment(VerticalAlignment::Top);
     Grid::SetRow(content, 0);
+
 
     Border contentBackground;
     contentBackground.Background(flyoutContentBackground);
@@ -7057,15 +9092,18 @@ static Grid BuildMiniPlayerFlyoutContent() {
     innerGrid.Children().Append(contentBackground);
     innerGrid.Children().Append(content);
 
+
     bottomBar.Margin({-16, 0, -16, 0});
     bottomBar.VerticalAlignment(VerticalAlignment::Stretch);
     Grid::SetRow(bottomBar, 1);
     innerGrid.Children().Append(bottomBar);
 
+
     bottomSep.Margin({-16, 0, -16, 0});
     bottomSep.VerticalAlignment(VerticalAlignment::Top);
     Grid::SetRow(bottomSep, 1);
     innerGrid.Children().Append(bottomSep);
+
 
     if (g_settings.showMiniPlayerBorder) {
         innerGrid.BorderBrush(MakeBrush({0xFF, 0x80, 0x80, 0xFF}));
@@ -7074,8 +9112,10 @@ static Grid BuildMiniPlayerFlyoutContent() {
         bottomBar.BorderThickness({1, 1, 1, 1});
     }
 
+
     bg.Child(innerGrid);
     outer.Children().Append(bg);
+
 
     outer.Opacity(0.0);
     try {
@@ -7084,6 +9124,7 @@ static Grid BuildMiniPlayerFlyoutContent() {
         transform.TranslateY(0.0);
         outer.RenderTransform(transform);
     } catch (...) {}
+
 
     g_miniPlayerArtRef       = artImage;
     g_miniPlayerTitleRef     = titleBlock;
@@ -7094,8 +9135,10 @@ static Grid BuildMiniPlayerFlyoutContent() {
     g_miniPlayerShuffleBtnRef = shuffleBtn;
     g_miniPlayerRepeatBtnRef  = repeatBtn;
 
+
     return outer;
 }
+
 
 struct MiniPlayerAnchor {
     winrt::Windows::Foundation::Point placementPoint{0.f, 0.f};
@@ -7105,23 +9148,28 @@ struct MiniPlayerAnchor {
     double animSign = 1.0;
 };
 
+
 static bool GetTaskbarMonitorWorkAreaInfo(FrameworkElement const& rootContent,
                                           RECT& outWorkAreaPx,
                                           POINT& outOriginPx,
                                           double& outScale) {
     if (!g_taskbarWnd || !rootContent) return false;
 
+
     HMONITOR mon = MonitorFromWindow(g_taskbarWnd, MONITOR_DEFAULTTONEAREST);
     if (!mon) return false;
+
 
     MONITORINFO mi{};
     mi.cbSize = sizeof(mi);
     if (!GetMonitorInfo(mon, &mi)) return false;
     outWorkAreaPx = mi.rcWork;
 
+
     POINT originPx{0, 0};
     if (!ClientToScreen(g_taskbarWnd, &originPx)) return false;
     outOriginPx = originPx;
+
 
     double scale = 1.0;
     try {
@@ -7131,8 +9179,10 @@ static bool GetTaskbarMonitorWorkAreaInfo(FrameworkElement const& rootContent,
     if (scale <= 0.0) scale = 1.0;
     outScale = scale;
 
+
     return true;
 }
+
 
 static bool ComputeScreenPlacementAnchor(FrameworkElement const& rootContent,
                                          MiniPlayerAnchor& outAnchor) {
@@ -7143,35 +9193,42 @@ static bool ComputeScreenPlacementAnchor(FrameworkElement const& rootContent,
         return false;
     }
 
+
     double left   = (workPx.left   - originPx.x) / scale;
     double top    = (workPx.top    - originPx.y) / scale;
     double right  = (workPx.right  - originPx.x) / scale;
     double bottom = (workPx.bottom - originPx.y) / scale;
+
 
     const std::wstring& hPlace = g_settings.miniPlayerHorizontalPlacement;
     const std::wstring& vPlace = g_settings.miniPlayerVerticalPlacement;
     int hDist = g_settings.miniPlayerHorizontalDistanceFromScreenEdge;
     int vDist = g_settings.miniPlayerVerticalDistanceFromScreenEdge;
 
+
     bool hLeft  = (hPlace == L"left");
     bool hRight = (hPlace == L"right");
     bool vTop   = (vPlace == L"top");
     bool vBottom = (vPlace == L"bottom");
+
 
     double anchorX;
     if (hLeft)       anchorX = left + hDist;
     else if (hRight) anchorX = right - hDist;
     else              anchorX = (left + right) / 2.0 + hDist;
 
+
     double anchorY;
     if (vTop)         anchorY = top + vDist;
     else if (vBottom) anchorY = bottom - vDist;
     else               anchorY = (top + bottom) / 2.0 + vDist;
 
+
     using FPM = Controls::Primitives::FlyoutPlacementMode;
     FPM placement = FPM::Top;
     int animAxis = 0;
     double animSign = 1.0;
+
 
     if (vBottom) {
         placement = hLeft ? FPM::TopEdgeAlignedLeft
@@ -7201,6 +9258,7 @@ static bool ComputeScreenPlacementAnchor(FrameworkElement const& rootContent,
         }
     }
 
+
     if (g_settings.miniPlayerAnimation == L"top") {
         animAxis = 0; animSign = -1.0;
     } else if (g_settings.miniPlayerAnimation == L"bottom") {
@@ -7211,6 +9269,7 @@ static bool ComputeScreenPlacementAnchor(FrameworkElement const& rootContent,
         animAxis = 1; animSign = 1.0;
     }
 
+
     outAnchor.placementPoint = {(float)anchorX, (float)anchorY};
     outAnchor.placement = placement;
     outAnchor.animAxis = animAxis;
@@ -7218,9 +9277,11 @@ static bool ComputeScreenPlacementAnchor(FrameworkElement const& rootContent,
     return true;
 }
 
+
 static void ShowMiniPlayerFlyout(FrameworkElement const& target) {
     if (!target || g_unloading) return;
     try {
+
 
         if (g_miniPlayerFlyoutOpen && g_miniPlayerFlyout) {
             g_miniPlayerExplicitCloseRequested.store(true);
@@ -7228,14 +9289,17 @@ static void ShowMiniPlayerFlyout(FrameworkElement const& target) {
             return;
         }
 
+
         Flyout flyout;
         Grid content = BuildMiniPlayerFlyoutContent();
+
 
         Grid clipHost;
         clipHost.HorizontalAlignment(HorizontalAlignment::Stretch);
         clipHost.VerticalAlignment(VerticalAlignment::Stretch);
         clipHost.Children().Append(content);
         flyout.Content(clipHost);
+
 
         Style flyoutStyle(winrt::xaml_typename<Controls::FlyoutPresenter>());
         flyoutStyle.Setters().Append(Setter(
@@ -7263,6 +9327,7 @@ static void ShowMiniPlayerFlyout(FrameworkElement const& target) {
             winrt::box_value(10000.0)));
         flyout.FlyoutPresenterStyle(flyoutStyle);
 
+
         flyout.Opened([content](auto const&, auto const&) {
             g_miniPlayerFlyoutOpen = true;
             g_miniPlayerClosingAnimStarted.store(false);
@@ -7276,6 +9341,7 @@ static void ShowMiniPlayerFlyout(FrameworkElement const& target) {
             if (!g_settings.hideMediaSessionsList) {
                 FetchMiniSessionInfosAsync(g_taskbarWnd);
             }
+
 
             try {
                 Controls::FlyoutPresenter presenter{nullptr};
@@ -7303,6 +9369,7 @@ static void ShowMiniPlayerFlyout(FrameworkElement const& target) {
                 Wh_Log(L"Flyout.Opened: Exception removing Shadow");
             }
 
+
             content.Opacity(0.0);
             auto transform = content.RenderTransform()
                 .try_as<winrt::Windows::UI::Xaml::Media::CompositeTransform>();
@@ -7312,6 +9379,7 @@ static void ShowMiniPlayerFlyout(FrameworkElement const& target) {
             }
             transform.TranslateX(0.0);
             transform.TranslateY(0.0);
+
 
             auto fired = std::make_shared<bool>(false);
             auto doReveal = [content, transform, fired]() mutable {
@@ -7324,13 +9392,16 @@ static void ShowMiniPlayerFlyout(FrameworkElement const& target) {
                     if (size <= 0) size = 450.0;
                     double startOffset = size * g_miniPlayerAnimSign;
 
+
                     PCWSTR propertyPath = horizontal
                         ? L"(UIElement.RenderTransform).(CompositeTransform.TranslateX)"
                         : L"(UIElement.RenderTransform).(CompositeTransform.TranslateY)";
 
+
                     if (horizontal) transform.TranslateX(startOffset);
                     else            transform.TranslateY(startOffset);
                     content.Opacity(1.0);
+
 
                     using namespace winrt::Windows::UI::Xaml::Media::Animation;
                     Storyboard sb;
@@ -7349,6 +9420,7 @@ static void ShowMiniPlayerFlyout(FrameworkElement const& target) {
                 } catch (...) {}
             };
 
+
             auto token = std::make_shared<winrt::event_token>();
             *token = content.SizeChanged([content, token, doReveal](
                 winrt::Windows::Foundation::IInspectable const&,
@@ -7357,6 +9429,7 @@ static void ShowMiniPlayerFlyout(FrameworkElement const& target) {
                 try { content.SizeChanged(*token); } catch (...) {}
                 doReveal();
             });
+
 
             auto fallbackTimer = DispatcherTimer();
             fallbackTimer.Interval(
@@ -7372,25 +9445,31 @@ static void ShowMiniPlayerFlyout(FrameworkElement const& target) {
             fallbackTimer.Start();
         });
 
+
         flyout.Closing([content](
             winrt::Windows::UI::Xaml::Controls::Primitives::FlyoutBase const& sender,
             winrt::Windows::UI::Xaml::Controls::Primitives::FlyoutBaseClosingEventArgs const& e)
         {
             if (g_unloading || g_applyingSettings) return;
 
+
             if (g_miniPlayerClosingAnimInProgress.exchange(false)) return;
 
+
             bool explicitClose = g_miniPlayerExplicitCloseRequested.exchange(false);
+
 
             if (g_settings.keepMiniPlayerOpen && !explicitClose) {
                 e.Cancel(true);
                 return;
             }
 
+
             if (g_miniPlayerClosingAnimStarted.load()) {
                 e.Cancel(true);
                 return;
             }
+
 
             try {
                 auto transform = content.RenderTransform()
@@ -7398,14 +9477,17 @@ static void ShowMiniPlayerFlyout(FrameworkElement const& target) {
                 if (!transform) return;
                 e.Cancel(true);
 
+
                 bool horizontal = (g_miniPlayerAnimAxis == 1);
                 double size = horizontal ? content.ActualWidth() : content.ActualHeight();
                 if (size <= 0) size = 450.0;
                 double endOffset = (size + 16.0) * g_miniPlayerAnimSign;
 
+
                 PCWSTR propertyPath = horizontal
                     ? L"(UIElement.RenderTransform).(CompositeTransform.TranslateX)"
                     : L"(UIElement.RenderTransform).(CompositeTransform.TranslateY)";
+
 
                 using namespace winrt::Windows::UI::Xaml::Media::Animation;
                 Storyboard sb;
@@ -7450,6 +9532,7 @@ static void ShowMiniPlayerFlyout(FrameworkElement const& target) {
             }
         });
 
+
         flyout.Closed([](auto const&, auto const&) {
             g_miniPlayerFlyoutOpen = false;
             g_miniPlayerClosingAnimStarted.store(false);
@@ -7469,12 +9552,15 @@ static void ShowMiniPlayerFlyout(FrameworkElement const& target) {
         });
 
 
+
+
         bool useScreenPlacement = (g_settings.miniPlayerPlacementMode == L"screen");
         Controls::Primitives::FlyoutPlacementMode placementMode =
             Controls::Primitives::FlyoutPlacementMode::Top;
         winrt::Windows::Foundation::Point anchorPoint{0.f, 0.f};
         FrameworkElement showAtElem = target;
         bool anchorComputed = false;
+
 
         try {
             auto xamlRoot = target.XamlRoot();
@@ -7483,9 +9569,11 @@ static void ShowMiniPlayerFlyout(FrameworkElement const& target) {
                 if (rootContent) {
                     showAtElem = rootContent;
 
+
                     try {
                         flyout.OverlayInputPassThroughElement(rootContent);
                     } catch (...) {}
+
 
                     if (useScreenPlacement) {
                         MiniPlayerAnchor screenAnchor;
@@ -7501,11 +9589,13 @@ static void ShowMiniPlayerFlyout(FrameworkElement const& target) {
                         }
                     }
 
+
                     if (!anchorComputed) {
                         auto xform = target.TransformToVisual(rootContent);
                         auto pt = xform.TransformPoint({0.f, 0.f});
                         float cx = pt.X + (float)target.ActualWidth() * 0.5f +
                                    (float)g_settings.miniPlayerHorizontalOffsetAbove;
+
 
                         bool placeBelow = (g_settings.miniPlayerVerticalPlacementNear == L"bottom");
                         if (placeBelow) {
@@ -7528,26 +9618,180 @@ static void ShowMiniPlayerFlyout(FrameworkElement const& target) {
             Wh_Log(L"ShowMiniPlayerFlyout: Exception setting position");
         }
 
+
         try {
             flyout.ShouldConstrainToRootBounds(false);
             flyout.Placement(placementMode);
         } catch (...) {}
 
+
         g_miniPlayerFlyout = flyout;
+
+
 
 
         Controls::Primitives::FlyoutShowOptions opts;
         opts.Placement(placementMode);
         opts.Position(anchorPoint);
 
+
         flyout.ShowAt(showAtElem, opts);
+
 
     } catch (...) {
         Wh_Log(L"ShowMiniPlayerFlyout: Exception in main try block");
     }
 }
 
-static Grid BuildPlayerGrid() {
+
+struct LyricsRegionState {
+    winrt::weak_ref<Canvas> canvas;
+    ColumnDefinition column{nullptr};
+    bool visible = false;
+    TextBlock current{nullptr}, highlight{nullptr}, next{nullptr};
+    RectangleGeometry highlightClip{nullptr}, viewportClip{nullptr};
+    DispatcherTimer timer{nullptr};
+    winrt::event_token token{};
+    HWND taskbar = nullptr;
+    std::wstring cachedText;
+    std::vector<double> widths;
+    double cachedFont = 0;
+    uint64_t lineAppearedAt = 0;
+    uint32_t cachedColor = 0;
+    void Render() {
+        if (g_unloading || g_applyingSettings) return;
+        auto area = canvas.get();
+        if (!area) return;
+        LyricFrame frame;
+        { std::lock_guard<std::mutex> lock(g_lyricsMtx); frame = g_lyricFrame; }
+        {
+            std::lock_guard<std::mutex> lock(g_mediaMtx);
+            if (frame.title != g_media.title || frame.artist != g_media.artist || frame.app != g_media.appUserModelId)
+                frame = {g_media.title, g_media.artist, g_media.appUserModelId, g_media.hasMedia ? L"正在获取歌词…" : L"暂无播放"};
+        }
+        const bool shouldShow = g_lyricsEnabled && frame.hasLyrics;
+        if (visible != shouldShow) {
+            visible = shouldShow;
+            column.Width({visible ? (double)g_lyricsWidth + 10 : 0.0, GridUnitType::Pixel});
+            area.Visibility(visible ? Visibility::Visible : Visibility::Collapsed);
+            if (g_settings.playerMaxWidth > 0) {
+                auto panel = VisualTreeHelper::GetParent(area);
+                auto wrapper = panel ? VisualTreeHelper::GetParent(panel).try_as<FrameworkElement>() : nullptr;
+                if (wrapper) wrapper.MaxWidth((double)g_settings.playerMaxWidth + (visible ? g_lyricsWidth + 10 : 0));
+            }
+        }
+        if (!shouldShow) return;
+        RECT rect{};
+        double height = 40;
+        if (taskbar && GetClientRect(taskbar, &rect)) {
+            UINT dpi = GetDpiForWindow(taskbar);
+            height = (rect.bottom - rect.top) * 96.0 / (dpi ? dpi : 96) - 4;
+        }
+        height = std::clamp(height, 20.0, 120.0);
+        const double width = g_lyricsWidth, rowHeight = height / 2;
+        const double font = std::clamp(rowHeight * .68, 9.0, 24.0);
+        if (area.Height() != height) area.Height(height);
+        viewportClip.Rect({0, 0, (float)width, (float)height});
+        bool measure = cachedFont != font || cachedText != frame.text;
+        if (cachedFont != font) {
+            current.FontSize(font); highlight.FontSize(font); next.FontSize(font * .92);
+            current.LineHeight(font * 1.18); highlight.LineHeight(font * 1.18); next.LineHeight(font * .92 * 1.18);
+            cachedFont = font;
+        }
+        auto color = TextColor();
+        uint32_t argb = uint32_t(color.A)<<24 | uint32_t(color.R)<<16 | uint32_t(color.G)<<8 | color.B;
+        if (argb != cachedColor) {
+            cachedColor = argb;
+            current.Foreground(MakeBrush(color)); highlight.Foreground(MakeBrush(color)); next.Foreground(MakeBrush(color));
+        }
+        bool timed = g_lyricsWordHighlight && !frame.words.empty();
+        current.Opacity(timed ? .45 : 1.0);
+        highlight.Visibility(timed ? Visibility::Visible : Visibility::Collapsed);
+        if (next.Text() != frame.next) next.Text(frame.next);
+        if (measure) {
+            if (cachedText != frame.text) lineAppearedAt = GetTickCount64();
+            cachedText = frame.text;
+            current.Text(frame.text); highlight.Text(frame.text);
+            TextBlock ruler;
+            ruler.FontFamily(current.FontFamily()); ruler.FontSize(font); ruler.FontWeight(current.FontWeight());
+            widths.assign(frame.text.size() + 1, 0);
+            for (size_t i = 1; i <= frame.text.size(); ++i) {
+                if (i < frame.text.size() && frame.text[i-1] >= 0xd800 && frame.text[i-1] <= 0xdbff) continue;
+                ruler.Text(frame.text.substr(0, i));
+                ruler.Measure({100000, (float)height});
+                widths[i] = ruler.DesiredSize().Width;
+            }
+        }
+        // Center the measured two-line block, rather than placing glyphs at the
+        // top of two half-height slots. Keep the baselines compact and stable.
+        current.Measure({100000, (float)height});
+        next.Measure({(float)width, (float)height});
+        double currentHeight = std::max(font * 1.18, (double)current.DesiredSize().Height);
+        double nextHeight = std::max(font * .92 * 1.18, (double)next.DesiredSize().Height);
+        double blockHeight = currentHeight + nextHeight;
+        double top = std::max(0.0, (height - blockHeight) / 2);
+        Canvas::SetTop(current, top); Canvas::SetTop(highlight, top);
+        Canvas::SetTop(next, top + currentHeight);
+        double sungWidth = 0;
+        if (timed && !widths.empty()) {
+            double position = frame.position + (GetTickCount64() - frame.sampledAt) * frame.rate;
+            sungWidth = LyricHighlightWidth(frame.words, position, widths);
+        }
+        highlightClip.Rect({0, 0, (float)sungWidth, (float)(currentHeight + 2)});
+        double overflow = widths.empty() ? 0 : std::max(0.0, widths.back() - width), offset = 0;
+        if (overflow > 0) {
+            if (timed) offset = std::clamp(sungWidth - width * .65, 0.0, overflow);
+            else {
+                double elapsed = (GetTickCount64() - lineAppearedAt) / 1000.0, duration = overflow / 24.0;
+                double phase = std::fmod(elapsed, 2 * duration + 4);
+                if (phase > 2 && phase <= duration + 2) offset = (phase - 2) * 24;
+                else if (phase > duration + 2 && phase <= duration + 4) offset = overflow;
+                else if (phase > duration + 4) offset = overflow - (phase - duration - 4) * 24;
+            }
+        }
+        Canvas::SetLeft(current, -offset); Canvas::SetLeft(highlight, -offset);
+    }
+};
+static Canvas BuildLyricsRegion(HWND taskbar, ColumnDefinition const& column) {
+    Canvas region;
+    region.Name(L"FluentMedia_LyricsRegion");
+    region.Width(g_lyricsWidth); region.MinWidth(g_lyricsWidth); region.MaxWidth(g_lyricsWidth);
+    region.Height(40); region.Margin({10, 0, 0, 0});
+    region.Visibility(Visibility::Collapsed);
+    region.VerticalAlignment(VerticalAlignment::Center);
+    auto state = std::make_shared<LyricsRegionState>();
+    state->canvas = winrt::make_weak(region); state->taskbar = taskbar; state->column = column;
+    state->viewportClip = RectangleGeometry(); region.Clip(state->viewportClip);
+    state->current = TextBlock(); state->highlight = TextBlock(); state->next = TextBlock();
+    state->highlightClip = RectangleGeometry(); state->highlight.Clip(state->highlightClip);
+    for (auto block : {state->current, state->highlight, state->next}) {
+        block.TextWrapping(TextWrapping::NoWrap); block.TextTrimming(TextTrimming::None);
+        block.LineStackingStrategy(LineStackingStrategy::BlockLineHeight);
+        block.FontFamily(Media::FontFamily(g_settings.artistFont.empty() ? L"Segoe UI" : g_settings.artistFont));
+        block.IsHitTestVisible(false);
+        region.Children().Append(block);
+    }
+    state->next.Width(g_lyricsWidth); state->next.TextTrimming(TextTrimming::CharacterEllipsis);
+    state->next.Opacity(.65);
+    region.Loaded([state](auto const&, auto const&) {
+        try {
+            state->Render();
+            if (state->timer) return;
+            state->timer = DispatcherTimer();
+            state->timer.Interval(winrt::Windows::Foundation::TimeSpan{std::chrono::milliseconds(32)});
+            std::weak_ptr<LyricsRegionState> weak = state;
+            state->token = state->timer.Tick([weak](auto const&, auto const&) {
+                if (auto live = weak.lock()) { try { live->Render(); } catch (...) {} }
+            });
+            state->timer.Start();
+        } catch (...) { Wh_Log(L"Lyrics: failed to start region rendering"); }
+    });
+    region.Unloaded([state](auto const&, auto const&) {
+        try { if (state->timer) { state->timer.Stop(); state->timer.Tick(state->token); state->timer = nullptr; } } catch (...) {}
+    });
+    return region;
+}
+static Grid BuildPlayerGrid(HWND taskbar) {
     try {
         g_vizBars->clear();
         g_vizBrushes->clear();
@@ -7769,7 +10013,7 @@ static Grid BuildPlayerGrid() {
                 pauseBorder.Visibility(Visibility::Collapsed);
                 Canvas::SetZIndex(pauseBorder, 8);
                 TextBlock pauseIcon;
-                pauseIcon.Text(L"");
+                pauseIcon.Text(L"");
                 pauseIcon.FontFamily(Media::FontFamily(L"Segoe MDL2 Assets"));
                 pauseIcon.FontSize((double)g_settings.pauseOverlayIconSize);
                 pauseIcon.Foreground(MakeBrush({0xFF, 0xFF, 0xFF, 0xFF}));
@@ -8231,6 +10475,15 @@ static Grid BuildPlayerGrid() {
                 Wh_Log(L"BuildPlayerGrid: Exception adding inline visualizer");
             }
         }
+        if (g_lyricsEnabled) {
+            ColumnDefinition lyricsColumn;
+            lyricsColumn.Width({0.0, GridUnitType::Pixel});
+            int column = (int)panel.ColumnDefinitions().Size();
+            panel.ColumnDefinitions().Append(lyricsColumn);
+            auto region = BuildLyricsRegion(taskbar, lyricsColumn);
+            Grid::SetColumn(region, column);
+            panel.Children().Append(region);
+        }
         Grid wrapper;
         wrapper.Name(kGridName);
         wrapper.VerticalAlignment(g_settings.fullHeightHitArea ? VerticalAlignment::Stretch : VerticalAlignment::Center);
@@ -8251,7 +10504,9 @@ static Grid BuildPlayerGrid() {
             wrapper.MaxWidth((double)g_settings.playerMaxWidth);
         }
 
+
         wrapper.Background(MakeBrush({0x00, 0, 0, 0}));
+
 
         Canvas::SetZIndex(backgroundBorder, 0);
         Canvas::SetZIndex(playerButton, 1);    
@@ -8769,7 +11024,7 @@ static bool InjectPlayerGrid() {
             }
             return false;
         }
-        Grid playerGrid = BuildPlayerGrid();
+        Grid playerGrid = BuildPlayerGrid(g_taskbarWnd);
         if (!playerGrid) return false;
         bool startButtonModActive = IsStartButtonModActive(root);
         (void)startButtonModActive;
@@ -9142,9 +11397,10 @@ static void RefreshPlayerContents() {
     bool hasSession = false;
     { std::lock_guard<std::mutex> lk(g_sessionMtx); hasSession = (g_currentSession != nullptr); }
     g_playerGrid.UpdateLayout();
-    if (title != g_scrollCachedTitle || artist != g_scrollCachedArtist) {
+    const std::wstring scrollArtist = artist;
+    if (title != g_scrollCachedTitle || scrollArtist != g_scrollCachedArtist) {
         g_scrollCachedTitle  = title;
-        g_scrollCachedArtist = artist;
+        g_scrollCachedArtist = scrollArtist;
         ResetScrollState(g_titleScroll);
         ResetScrollState(g_artistScroll);
         try {
@@ -9258,10 +11514,10 @@ static void RefreshPlayerContents() {
     if (auto fe = FindChildByName(g_playerGrid, kArtistBlockName))
         if (auto ab = fe.try_as<TextBlock>())
             try {
-                std::wstring displayArtist = artist;
+                std::wstring displayArtist = scrollArtist;
                 if (!hasSession) {
                     displayArtist = g_settings.noMediaArtistText;
-                } else if (artist.empty()) {
+                } else if (displayArtist.empty()) {
                     displayArtist = g_settings.emptyArtistText;
                 }
                 ab.Text(winrt::hstring(displayArtist));
@@ -9446,7 +11702,7 @@ static void RefreshPlayerContents() {
                 }
                 if (auto ct = btn.Content().try_as<TextBlock>()) {
                     bool isEnabled = g_shuffleEnabled.load();
-                    const wchar_t* glyph = L"";
+                    const wchar_t* glyph = L"";
                     ct.Text(winrt::hstring(glyph));
                     if (!supported && !g_settings.hideUnsupportedButtons) {
                         ct.Opacity(0.35);
@@ -9471,13 +11727,13 @@ static void RefreshPlayerContents() {
                     const wchar_t* glyph;
                     switch (mode) {
                         case RepeatMode::Off:
-                            glyph = L"";
+                            glyph = L"";
                             break;
                         case RepeatMode::All:
-                            glyph = L"";
+                            glyph = L"";
                             break;
                         case RepeatMode::One:
-                            glyph = L"";
+                            glyph = L"";
                             break;
                     }
                     ct.Text(winrt::hstring(glyph));
@@ -9888,6 +12144,7 @@ static void RefreshPlayerContents() {
                 } catch (...) {}
             }
 
+
             if (tooltipHost) {
                 try { ToolTipService::SetToolTip(tooltipHost, nullptr); } catch (...) {}
             }
@@ -9920,6 +12177,7 @@ static void UpdateVisibility() {
         if (hasMedia || hasSession) {
             g_lastMediaTime = std::chrono::steady_clock::now();
         }
+
 
         if (g_settings.hideWhenNoMedia && !g_miniPlayerFlyoutOpen) {
             if (!hasSession) {
@@ -10034,6 +12292,1514 @@ static void UpdateVisibility() {
         }
     } catch (...) {}
 }
+
+// === Full-style per-monitor media player mirrors (experimental) ===
+// Each secondary taskbar receives BuildPlayerGrid(), the SAME XAML tree as
+// the primary. GSMTC/media transport and settings are shared; mutable UI
+// data (cover cache, scrolling, tooltips and visualizer shapes) is per screen.
+struct SecondaryMediaView {
+    HWND hwnd = nullptr;
+    Grid root{nullptr};
+    Grid target{nullptr};
+    int insertedColumn = -1;
+    bool addedColumn = false;
+    FrameworkElement anchorElement{nullptr};
+    Thickness anchorOriginalMargin{};
+    bool anchorOnLeft = true;
+    bool usingFallbackAnchor = false;
+    bool rightEdgeNeedsTrayClearance = false;
+    winrt::event_token anchorLayoutToken{};
+    ToolTip tooltip{nullptr};
+    std::function<void()> buttonUpdater;
+    Style buttonStyle{nullptr};
+    SolidColorBrush mediaHoverBrush{nullptr};
+    SolidColorBrush mediaPressedBrush{nullptr};
+    SolidColorBrush playerHoverBrush{nullptr};
+    SolidColorBrush playerPressedBrush{nullptr};
+    SolidColorBrush playerBorderBrush{nullptr};
+    SolidColorBrush playerBorderPressedBrush{nullptr};
+    TextScrollState titleScroll{};
+    TextScrollState artistScroll{};
+    std::wstring scrollCachedTitle;
+    std::wstring scrollCachedArtist;
+    std::wstring cachedAlbumTitle;
+    std::wstring cachedAlbumArtist;
+    std::vector<BYTE> cachedThumbnailBytes;
+    int cachedAppIconSize = -1;
+    std::vector<VizRect> vizBars;
+    std::vector<SolidColorBrush> vizBrushes;
+    winrt::Windows::UI::Xaml::DispatcherTimer frameTimer{nullptr};
+    winrt::event_token frameToken{};
+    bool lastLightTheme = false;
+};
+[[clang::no_destroy]] static std::list<SecondaryMediaView> g_secondaryMediaViews;
+
+static std::vector<HWND> FindAllCurrentProcessTaskbarWnds() {
+    std::vector<HWND> handles;
+    EnumWindows([](HWND hwnd, LPARAM p) CALLBACK -> BOOL {
+        DWORD pid = 0;
+        wchar_t className[64]{};
+        if (GetWindowThreadProcessId(hwnd, &pid) &&
+            pid == GetCurrentProcessId() &&
+            GetClassNameW(hwnd, className, ARRAYSIZE(className)) &&
+            (_wcsicmp(className, L"Shell_TrayWnd") == 0 ||
+             _wcsicmp(className, L"Shell_SecondaryTrayWnd") == 0)) {
+            reinterpret_cast<std::vector<HWND>*>(p)->push_back(hwnd);
+        }
+        return TRUE;
+    }, reinterpret_cast<LPARAM>(&handles));
+    return handles;
+}
+static SecondaryMediaView* FindSecondaryMediaView(HWND hwnd) {
+    for (auto& view : g_secondaryMediaViews)
+        if (view.hwnd == hwnd) return &view;
+    return nullptr;
+}
+static double GetAvailableMirrorScrollTextAreaWidth(Grid const& root) {
+    try {
+        if (g_settings.playerMaxWidth <= 0) return 0.0;
+        if (!root) return 0.0;
+        auto panelFe = FindChildByName(root, kPanelGridName);
+        if (!panelFe) return 0.0;
+        auto panelGrid = panelFe.try_as<Grid>();
+        if (!panelGrid) return 0.0;
+        double total = panelGrid.ActualWidth();
+        if (total <= 0.0) return 0.0;
+        auto cols = panelGrid.ColumnDefinitions();
+        double used = 0.0;
+        for (uint32_t i = 0; i < cols.Size(); i++) {
+            if (i == 1) continue;
+            used += cols.GetAt(i).ActualWidth();
+        }
+        double leftMargin  = (double)g_settings.textAreaLeftMargin;
+        double rightMargin = (double)g_settings.textAreaRightMargin;
+        double available = total - used - leftMargin - rightMargin;
+        if (available < 0.0) available = 0.0;
+        return available;
+    } catch (...) {
+        return 0.0;
+    }
+}
+static void UpdateSecondaryScrollTransforms(SecondaryMediaView& view) {
+    if (!view.root || (!g_settings.enableTitleScrolling && !g_settings.enableArtistScrolling)) return;
+    bool isLoop = (g_settings.scrollMode == L"loop");
+    if (g_settings.enableTitleScrolling) {
+        try {
+            if (auto fe = FindChildByName(view.root, kTitleScrollViewName)) {
+                if (auto cv = fe.try_as<Canvas>()) {
+                    int n = VisualTreeHelper::GetChildrenCount(cv);
+                    for (int i = 0; i < n; i++) {
+                        auto child = VisualTreeHelper::GetChild(cv, i);
+                        if (auto tb = child.try_as<TextBlock>()) {
+                            auto name = tb.Name();
+                            if (name == kTitleBlockName) {
+                                Canvas::SetLeft(tb, -view.titleScroll.offset);
+                            } else if (isLoop && name == kTitleCloneName) {
+                                double gap = view.titleScroll.textWidth + g_settings.loopGap;
+                                Canvas::SetLeft(tb, gap - view.titleScroll.offset);
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (...) {}
+    }
+    if (g_settings.enableArtistScrolling) {
+        try {
+            if (auto fe = FindChildByName(view.root, kArtistScrollViewName)) {
+                if (auto cv = fe.try_as<Canvas>()) {
+                    int n = VisualTreeHelper::GetChildrenCount(cv);
+                    for (int i = 0; i < n; i++) {
+                        auto child = VisualTreeHelper::GetChild(cv, i);
+                        if (auto ab = child.try_as<TextBlock>()) {
+                            auto name = ab.Name();
+                            if (name == kArtistBlockName) {
+                                Canvas::SetLeft(ab, -view.artistScroll.offset);
+                            } else if (isLoop && name == kArtistCloneName) {
+                                double gap = view.artistScroll.textWidth + g_settings.loopGap;
+                                Canvas::SetLeft(ab, gap - view.artistScroll.offset);
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (...) {}
+    }
+}
+static void RefreshSecondaryThemeColors(SecondaryMediaView& view) {
+    if (!view.root || g_unloading || g_applyingSettings) return;
+    g_vizBaseColorDirty = true;
+    g_vizPaletteColorsDirty = true;
+    try {
+        UpdateHoverBrushColors();
+        auto textClr = TextColor();
+        auto artistClr = ArtistColor();
+        auto buttonClr = ButtonColor();
+        if (auto bgFe = FindChildByName(view.root, L"FluentMedia_Background")) {
+            if (auto bgBorder = bgFe.try_as<Border>()) {
+                auto& bgType = g_settings.backgroundType;
+                if (bgType == L"album_art_blur") {
+                    if (!view.cachedThumbnailBytes.empty()) {
+                        int w = (int)bgBorder.ActualWidth();
+                        int h = (int)bgBorder.ActualHeight();
+                        if (w > 0 && h > 0) {
+                            bgBorder.Background(MakeAlbumBlurBrush(view.cachedThumbnailBytes, w, h));
+                        }
+                    } else {
+                        auto fallbackCol = IsSystemLightTheme()
+                            ? winrt::Windows::UI::Color{0xCC, 0xF3, 0xF3, 0xF3}
+                            : winrt::Windows::UI::Color{0xCC, 0x20, 0x20, 0x20};
+                        bgBorder.Background(MakeBrush(fallbackCol));
+                    }
+                    bgBorder.Visibility(Visibility::Visible);
+                    bgBorder.Opacity(g_settings.blurOpacity / 100.0);
+                } else if (bgType == L"solid" || bgType == L"gradient" || bgType == L"acrylic" || bgType == L"mica" || bgType == L"mica_alt") {
+                    bgBorder.Background(MakeBackgroundBrush());
+                    bgBorder.Visibility(Visibility::Visible);
+                    bgBorder.Opacity(1.0);
+                } else {
+                    bgBorder.Background(nullptr);
+                    bgBorder.Visibility(Visibility::Collapsed);
+                }
+            }
+        }
+        if (auto fe = FindChildByName(view.root, L"FluentMedia_OuterBorder")) {
+            if (auto btn = fe.try_as<Button>()) {
+                try {
+                    auto normalBg = MakeBackgroundBrush();
+                    ApplyFluentMediaButtonStyle(btn);
+                    btn.ApplyTemplate();
+                    SetupPlayerCommonStates(btn, normalBg);
+                    GoToCommonState(btn, IsHoverEffectEnabled(g_settings.playerHoverEffectMode), false, false);
+                } catch (...) {}
+            }
+        }
+        if (auto fe = FindChildByName(view.root, kTitleBlockName))
+            if (auto tb = fe.try_as<TextBlock>()) tb.Foreground(MakeBrush(textClr));
+        if (auto fe = FindChildByName(view.root, kArtistBlockName))
+            if (auto ab = fe.try_as<TextBlock>()) ab.Foreground(MakeBrush(artistClr));
+        for (const wchar_t* name : {kPrevBtnName, kPlayBtnName, kNextBtnName, kRewindBtnName, kForwardBtnName, kShuffleBtnName, kRepeatBtnName, kSwitchSessionsBtnName}) {
+            if (auto fe = FindChildByName(view.root, name)) {
+                if (auto btn = fe.try_as<Button>()) {
+                    if (auto ct = btn.Content().try_as<TextBlock>()) ct.Foreground(MakeBrush(buttonClr));
+                    ApplyFluentMediaButtonStyle(btn);
+                    btn.ApplyTemplate();
+                    SetupMediaButtonCommonStates(btn);
+                    try { VisualStateManager::GoToState(btn, L"Normal", false); } catch (...) {}
+                }
+            }
+        }
+    } catch (...) {}
+}
+static void VizApplySecondaryFrame(SecondaryMediaView& view) {
+    if (!g_settings.vizEnabled || view.vizBars.empty())
+        return;
+    UpdateVisualizerPeaks();
+    float attack = 0.55f, decay = 0.18f;
+    float sensBoost = std::max(0.f, (g_settings.vizSensitivity - 100) / 200.f) * 0.12f;
+    switch (g_settings.vizShape) {
+        case VizShape::Stereo:  attack = 0.72f; decay = 0.22f + sensBoost; break;
+        case VizShape::Mirror:  attack = 0.52f; decay = 0.20f + sensBoost; break;
+        case VizShape::Wave:    attack = 0.34f; decay = 0.17f + sensBoost; break;
+        case VizShape::Breathe: attack = 0.20f; decay = 0.11f + sensBoost; break;
+        default:                decay += sensBoost; break;
+    }
+    int barCount = std::min((int)view.vizBars.size(), std::max(1, g_settings.vizBars));
+    double zoneH = VizZoneHeight();
+    double maxBH = std::max(4.0, zoneH - 6.0);
+    double minBH = (double)g_settings.vizBarWidth;
+    double idlePx = std::min((double)g_settings.vizIdleBarSize, std::max(0.0, maxBH - minBH));
+    double range = std::max(0.0, maxBH - minBH - idlePx);
+    bool idleHidden = (g_settings.vizIdleBarSize == 0);
+    winrt::Windows::UI::Color baseCol{255, 255, 255, 255};
+    if (g_settings.vizColorMode == VizColorMode::DynamicAlbum) {
+        if (g_vizBaseColorDirty || g_vizPaletteColorsDirty) {
+            g_cachedVizBaseColor = VizEnsureContrast(g_cachedAlbumPalette.primary);
+            g_cachedVizBaseColor.A = 255;
+        }
+        baseCol = g_cachedVizBaseColor;
+    } else {
+        if (g_vizBaseColorDirty) {
+            g_cachedVizBaseColor = ParseColorWithThemeSupport(g_settings.vizColor, 255);
+        }
+        baseCol = g_cachedVizBaseColor;
+    }
+    if (g_vizPaletteColorsDirty || g_vizBaseColorDirty) {
+        g_cachedVizPal0   = VizEnsureContrast(g_cachedAlbumPalette.primary);
+        g_cachedVizPal1   = VizEnsureContrast(g_cachedAlbumPalette.secondary);
+        g_cachedVizCg0    = ParseColorWithSpecialValues(g_settings.vizColor1, 255);
+        g_cachedVizCg1    = ParseColorWithSpecialValues(g_settings.vizColor2, 255);
+        g_cachedVizAcrCol = ParseColorWithThemeSupport(g_settings.vizColor, 255);
+        g_vizPaletteColorsDirty = false;
+        g_vizBaseColorDirty = false;
+    }
+    const auto& pal0   = g_cachedVizPal0;
+    const auto& pal1   = g_cachedVizPal1;
+    const auto& cg0    = g_cachedVizCg0;
+    const auto& cg1    = g_cachedVizCg1;
+    const auto& acrCol = g_cachedVizAcrCol;
+    for (int i = 0; i < barCount; i++) {
+        float tgt = g_VizTarget[i], cur = g_VizPeak[i];
+        float a = attack, d = decay;
+        if (g_settings.vizShape == VizShape::Mountain) {
+            float dist = fabsf((float)i - ((barCount - 1) * 0.5f));
+            if (dist < 0.5f)      { a = 0.85f; d = 0.26f + sensBoost; }
+            else if (dist < 1.5f) { a = 0.62f; d = 0.20f + sensBoost; }
+            else                  { a = 0.92f; d = 0.34f + sensBoost; }
+        }
+        float next = cur + (tgt - cur) * ((tgt > cur) ? a : d);
+        g_VizPeak[i] = (fabsf(next - cur) > 0.0005f) ? next : tgt;
+        float fac = std::max(0.f, g_VizPeak[i]);
+        double bh = idleHidden
+            ? (fac * maxBH)
+            : (minBH + idlePx + fac * range);
+        winrt::Windows::UI::Color c = baseCol;
+        if (g_settings.vizColorMode == VizColorMode::DynamicGradient) {
+            float t = (float)i / std::max(1, barCount - 1);
+            float freqT = std::min(1.f, t * 0.6f + fac * 0.4f);
+            c = VizLerpColor(pal0, pal1, freqT);
+        } else if (g_settings.vizColorMode == VizColorMode::CustomGradient) {
+            float t = (barCount > 1) ? (float)i / (barCount - 1) : 0.f;
+            c = VizLerpColor(cg0, cg1, t);
+        } else if (g_settings.vizColorMode == VizColorMode::Acrylic) {
+            BYTE aa = (BYTE)std::max(30, std::min(180, (int)(150.f * fac + 30.f)));
+            c = winrt::Windows::UI::Color{aa, acrCol.R, acrCol.G, acrCol.B};
+        }
+        try {
+            view.vizBars[i].Height(bh);
+            if (i < (int)view.vizBrushes.size() && view.vizBrushes[i])
+                view.vizBrushes[i].Color(c);
+        } catch (...) {}
+    }
+}
+static void RefreshSecondaryContents(SecondaryMediaView& view) {
+    if (!view.root || g_unloading || g_applyingSettings) return;
+    std::wstring      title, artist;
+    bool              isPlaying = false, hasMedia = false;
+    std::vector<BYTE> thumbBytes;
+    std::vector<BYTE> appIconBytes;
+    uint64_t          thumbHash = 0;
+    bool              canSkipPrevious = true, canSkipNext = true;
+    bool              canShuffle = true, canRepeat = true, canSeek = true;
+    {
+        std::lock_guard<std::mutex> lk(g_mediaMtx);
+        title        = g_media.title;
+        artist       = g_media.artist;
+        isPlaying    = g_media.isPlaying;
+        hasMedia     = g_media.hasMedia;
+        thumbBytes   = g_media.thumbnailBytes;
+        thumbHash    = g_media.thumbnailHash;
+        appIconBytes = g_media.appIconBytes;
+        canSkipPrevious = g_media.canSkipPrevious;
+        canSkipNext     = g_media.canSkipNext;
+        canShuffle      = g_media.canShuffle;
+        canRepeat       = g_media.canRepeat;
+        canSeek         = g_media.canSeek;
+    }
+    (void)hasMedia;
+    bool hasSession = false;
+    { std::lock_guard<std::mutex> lk(g_sessionMtx); hasSession = (g_currentSession != nullptr); }
+    view.root.UpdateLayout();
+    const std::wstring scrollArtist = artist;
+    if (title != view.scrollCachedTitle || scrollArtist != view.scrollCachedArtist) {
+        view.scrollCachedTitle  = title;
+        view.scrollCachedArtist = scrollArtist;
+        ResetScrollState(view.titleScroll);
+        ResetScrollState(view.artistScroll);
+        try {
+            if (auto fe = FindChildByName(view.root, kTitleCloneName))
+                if (auto cl = fe.try_as<TextBlock>())
+                    cl.Visibility(Visibility::Collapsed);
+        } catch (...) {}
+        try {
+            if (auto fe = FindChildByName(view.root, kArtistCloneName))
+                if (auto cl = fe.try_as<TextBlock>())
+                    cl.Visibility(Visibility::Collapsed);
+        } catch (...) {}
+        try {
+            if (auto fe = FindChildByName(view.root, kTitleBlockName))
+                if (auto tb = fe.try_as<TextBlock>())
+                    Canvas::SetLeft(tb, 0.0);
+        } catch (...) {}
+        try {
+            if (auto fe = FindChildByName(view.root, kArtistBlockName))
+                if (auto ab = fe.try_as<TextBlock>())
+                    Canvas::SetLeft(ab, 0.0);
+        } catch (...) {}
+    }
+    bool titleVisible = false;
+    bool artistVisible = false;
+    if (auto fe = FindChildByName(view.root, kTitleBlockName))
+        if (auto tb = fe.try_as<TextBlock>())
+            try {
+                std::wstring displayTitle = title;
+                if (!hasSession) {
+                    displayTitle = g_settings.noMediaTitleText;
+                } else if (title.empty()) {
+                    displayTitle = g_settings.emptyTitleText;
+                }
+                tb.Text(winrt::hstring(displayTitle));
+                tb.Foreground(MakeBrush(TextColor()));
+                bool visible = g_settings.showTrackTitle && !displayTitle.empty();
+                titleVisible = visible;
+                tb.Visibility(visible ? Visibility::Visible : Visibility::Collapsed);
+                ToolTipService::SetToolTip(tb, nullptr);
+                if (g_settings.enableTitleScrolling && visible) {
+                    try {
+                        if (auto viewFe = FindChildByName(view.root, kTitleScrollViewName))
+                            viewFe.Visibility(Visibility::Visible);
+                    } catch (...) {}
+                    if (auto panelFe = FindChildByName(view.root, kPanelGridName)) {
+                        panelFe.UpdateLayout();
+                    }
+                    tb.UpdateLayout();
+                    double textW = tb.DesiredSize().Width;
+                    if (auto viewFe = FindChildByName(view.root, kTitleScrollViewName)) {
+                        if (auto viewCanvas = viewFe.try_as<Canvas>()) {
+                            double minW = (double)g_settings.textAreaMinWidth;
+                            double maxW = (double)g_settings.textAreaMaxWidth;
+                            double viewW = textW;
+                            if (maxW > 0 && viewW > maxW) viewW = maxW;
+                            double availW = GetAvailableMirrorScrollTextAreaWidth(view.root);
+                            if (availW > 0.0 && viewW > availW) {
+                                viewW = (minW > 0.0) ? std::max(availW, minW) : availW;
+                            }
+                            if (minW > 0 && viewW < minW) viewW = minW;
+                            if (std::abs(viewCanvas.Width() - viewW) > 0.5) {
+                                viewCanvas.Width(viewW);
+                                try {
+                                    if (auto geo = viewCanvas.Clip().try_as<winrt::Windows::UI::Xaml::Media::RectangleGeometry>()) {
+                                        auto r = geo.Rect();
+                                        geo.Rect({0, 0, (float)viewW, r.Height});
+                                    }
+                                } catch (...) {}
+                            }
+                            bool wasActive = view.titleScroll.active;
+                            view.titleScroll.textWidth = textW;
+                            view.titleScroll.viewWidth = viewW;
+                            view.titleScroll.active = (textW > viewW + 2.0);
+                            if (!view.titleScroll.active) {
+                                view.titleScroll.offset = 0.0;
+                                view.titleScroll.forward = true;
+                                Canvas::SetLeft(tb, 0.0);
+                            } else if (!wasActive) {
+                                view.titleScroll.offset = 0.0;
+                                view.titleScroll.forward = true;
+                                if (g_settings.scrollMode == L"loop") {
+                                    view.titleScroll.pausing  = false;
+                                    view.titleScroll.pauseTick = 0;
+                                } else {
+                                    view.titleScroll.pausing  = true;
+                                    view.titleScroll.pauseTick = g_settings.scrollPauseDuration;
+                                }
+                            }
+                            if (auto cloneFe = FindChildByName(view.root, kTitleCloneName)) {
+                                if (auto clone = cloneFe.try_as<TextBlock>()) {
+                                    clone.Text(tb.Text());
+                                    clone.Foreground(tb.Foreground());
+                                    clone.Visibility(g_settings.scrollMode == L"loop" && view.titleScroll.active
+                                        ? Visibility::Visible : Visibility::Collapsed);
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    view.titleScroll.active = false;
+                    view.titleScroll.offset = 0.0;
+                    if (g_settings.enableTitleScrolling) {
+                        try {
+                            if (auto viewFe = FindChildByName(view.root, kTitleScrollViewName))
+                                viewFe.Visibility(Visibility::Collapsed);
+                        } catch (...) {}
+                    }
+                }
+            } catch (...) {}
+    if (auto fe = FindChildByName(view.root, kArtistBlockName))
+        if (auto ab = fe.try_as<TextBlock>())
+            try {
+                std::wstring displayArtist = scrollArtist;
+                if (!hasSession) {
+                    displayArtist = g_settings.noMediaArtistText;
+                } else if (displayArtist.empty()) {
+                    displayArtist = g_settings.emptyArtistText;
+                }
+                ab.Text(winrt::hstring(displayArtist));
+                bool visible = g_settings.showTrackArtist && !displayArtist.empty();
+                artistVisible = visible;
+                ab.Visibility(visible ? Visibility::Visible : Visibility::Collapsed);
+                ab.Foreground(MakeBrush(ArtistColor()));
+                ToolTipService::SetToolTip(ab, nullptr);
+                if (g_settings.enableArtistScrolling && visible) {
+                    try {
+                        if (auto viewFe = FindChildByName(view.root, kArtistScrollViewName))
+                            viewFe.Visibility(Visibility::Visible);
+                    } catch (...) {}
+                    if (auto panelFe = FindChildByName(view.root, kPanelGridName)) {
+                        panelFe.UpdateLayout();
+                    }
+                    ab.UpdateLayout();
+                    double textW = ab.DesiredSize().Width;
+                    if (auto viewFe = FindChildByName(view.root, kArtistScrollViewName)) {
+                        if (auto viewCanvas = viewFe.try_as<Canvas>()) {
+                            double minW = (double)g_settings.textAreaMinWidth;
+                            double maxW = (double)g_settings.textAreaMaxWidth;
+                            double viewW = textW;
+                            if (maxW > 0 && viewW > maxW) viewW = maxW;
+                            double availW = GetAvailableMirrorScrollTextAreaWidth(view.root);
+                            if (availW > 0.0 && viewW > availW) {
+                                viewW = (minW > 0.0) ? std::max(availW, minW) : availW;
+                            }
+                            if (minW > 0 && viewW < minW) viewW = minW;
+                            if (std::abs(viewCanvas.Width() - viewW) > 0.5) {
+                                viewCanvas.Width(viewW);
+                                try {
+                                    if (auto geo = viewCanvas.Clip().try_as<winrt::Windows::UI::Xaml::Media::RectangleGeometry>()) {
+                                        auto r = geo.Rect();
+                                        geo.Rect({0, 0, (float)viewW, r.Height});
+                                    }
+                                } catch (...) {}
+                            }
+                            bool wasActive = view.artistScroll.active;
+                            view.artistScroll.textWidth = textW;
+                            view.artistScroll.viewWidth = viewW;
+                            view.artistScroll.active = (textW > viewW + 2.0);
+                            if (!view.artistScroll.active) {
+                                view.artistScroll.offset = 0.0;
+                                view.artistScroll.forward = true;
+                                Canvas::SetLeft(ab, 0.0);
+                            } else if (!wasActive) {
+                                view.artistScroll.offset = 0.0;
+                                view.artistScroll.forward = true;
+                                if (g_settings.scrollMode == L"loop") {
+                                    view.artistScroll.pausing  = false;
+                                    view.artistScroll.pauseTick = 0;
+                                } else {
+                                    view.artistScroll.pausing  = true;
+                                    view.artistScroll.pauseTick = g_settings.scrollPauseDuration;
+                                }
+                            }
+                            if (auto cloneFe = FindChildByName(view.root, kArtistCloneName)) {
+                                if (auto clone = cloneFe.try_as<TextBlock>()) {
+                                    clone.Text(ab.Text());
+                                    clone.Foreground(ab.Foreground());
+                                    clone.Visibility(g_settings.scrollMode == L"loop" && view.artistScroll.active
+                                        ? Visibility::Visible : Visibility::Collapsed);
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    view.artistScroll.active = false;
+                    view.artistScroll.offset = 0.0;
+                    if (g_settings.enableArtistScrolling) {
+                        try {
+                            if (auto viewFe = FindChildByName(view.root, kArtistScrollViewName))
+                                viewFe.Visibility(Visibility::Collapsed);
+                        } catch (...) {}
+                    }
+                }
+            } catch (...) {}
+    if ((view.titleScroll.active || view.artistScroll.active) &&
+        (g_settings.enableTitleScrolling || g_settings.enableArtistScrolling)) {
+        if (view.frameTimer && !view.frameTimer.IsEnabled()) {
+            try { view.frameTimer.Start(); } catch (...) {}
+        }
+    }
+    try {
+        if (auto stackFe = FindChildByName(view.root, kTextStackName)) {
+            bool anyTextVisible = titleVisible || artistVisible;
+            stackFe.Visibility(anyTextVisible ? Visibility::Visible : Visibility::Collapsed);
+        }
+    } catch (...) {}
+    if (auto fe = FindChildByName(view.root, kPlayBtnName))
+        if (auto btn = fe.try_as<Button>())
+            try {
+                if (auto ct = btn.Content().try_as<TextBlock>()) {
+                    const wchar_t* glyph = GetGlyph(2, isPlaying);
+                    ct.Text(winrt::hstring(glyph));
+                    ct.Foreground(MakeBrush(ButtonColor()));
+                }
+            } catch (...) {}
+    if (auto fe = FindChildByName(view.root, kPrevBtnName))
+        if (auto btn = fe.try_as<Button>())
+            try {
+                bool supported = canSkipPrevious;
+                btn.IsEnabled(supported);
+                if (g_settings.hideUnsupportedButtons) {
+                    btn.Visibility(supported ? Visibility::Visible : Visibility::Collapsed);
+                } else {
+                    btn.Visibility(Visibility::Visible);
+                }
+                if (auto ct = btn.Content().try_as<TextBlock>()) {
+                    const wchar_t* glyph = GetGlyph(1);
+                    ct.Text(winrt::hstring(glyph));
+                    if (!supported && !g_settings.hideUnsupportedButtons) {
+                        ct.Opacity(0.35);
+                        ct.Foreground(MakeBrush(ButtonColor()));
+                    } else {
+                        ct.Opacity(1.0);
+                        ct.Foreground(MakeBrush(ButtonColor()));
+                    }
+                }
+            } catch (...) {}
+    if (auto fe = FindChildByName(view.root, kNextBtnName))
+        if (auto btn = fe.try_as<Button>())
+            try {
+                bool supported = canSkipNext;
+                btn.IsEnabled(supported);
+                if (g_settings.hideUnsupportedButtons) {
+                    btn.Visibility(supported ? Visibility::Visible : Visibility::Collapsed);
+                } else {
+                    btn.Visibility(Visibility::Visible);
+                }
+                if (auto ct = btn.Content().try_as<TextBlock>()) {
+                    const wchar_t* glyph = GetGlyph(3);
+                    ct.Text(winrt::hstring(glyph));
+                    ct.Opacity(supported ? 1.0 : 0.35);
+                    ct.Foreground(MakeBrush(ButtonColor()));
+                }
+            } catch (...) {}
+    if (auto fe = FindChildByName(view.root, kRewindBtnName))
+        if (auto btn = fe.try_as<Button>())
+            try {
+                bool supported = canSeek;
+                btn.IsEnabled(supported);
+                if (g_settings.hideUnsupportedButtons) {
+                    btn.Visibility(supported ? Visibility::Visible : Visibility::Collapsed);
+                } else {
+                    btn.Visibility(Visibility::Visible);
+                }
+                if (auto ct = btn.Content().try_as<TextBlock>()) {
+                    const wchar_t* glyph = GetGlyph(5);
+                    ct.Text(winrt::hstring(glyph));
+                    ct.Opacity(supported ? 1.0 : 0.35);
+                    ct.Foreground(MakeBrush(ButtonColor()));
+                }
+            } catch (...) {}
+    if (auto fe = FindChildByName(view.root, kForwardBtnName))
+        if (auto btn = fe.try_as<Button>())
+            try {
+                bool supported = canSeek;
+                btn.IsEnabled(supported);
+                if (g_settings.hideUnsupportedButtons) {
+                    btn.Visibility(supported ? Visibility::Visible : Visibility::Collapsed);
+                } else {
+                    btn.Visibility(Visibility::Visible);
+                }
+                if (auto ct = btn.Content().try_as<TextBlock>()) {
+                    const wchar_t* glyph = GetGlyph(6);
+                    ct.Text(winrt::hstring(glyph));
+                    ct.Opacity(supported ? 1.0 : 0.35);
+                    ct.Foreground(MakeBrush(ButtonColor()));
+                }
+            } catch (...) {}
+    if (auto fe = FindChildByName(view.root, kShuffleBtnName))
+        if (auto btn = fe.try_as<Button>())
+            try {
+                bool supported = canShuffle;
+                btn.IsEnabled(supported);
+                if (g_settings.hideUnsupportedButtons) {
+                    btn.Visibility(supported ? Visibility::Visible : Visibility::Collapsed);
+                } else {
+                    btn.Visibility(Visibility::Visible);
+                }
+                if (auto ct = btn.Content().try_as<TextBlock>()) {
+                    bool isEnabled = g_shuffleEnabled.load();
+                    const wchar_t* glyph = L"";
+                    ct.Text(winrt::hstring(glyph));
+                    if (!supported && !g_settings.hideUnsupportedButtons) {
+                        ct.Opacity(0.35);
+                    } else {
+                        ct.Opacity(isEnabled ? 1.0 : 0.4);
+                    }
+                    ct.Foreground(MakeBrush(ButtonColor()));
+                }
+            } catch (...) {}
+    if (auto fe = FindChildByName(view.root, kRepeatBtnName))
+        if (auto btn = fe.try_as<Button>())
+            try {
+                bool supported = canRepeat;
+                btn.IsEnabled(supported);
+                if (g_settings.hideUnsupportedButtons) {
+                    btn.Visibility(supported ? Visibility::Visible : Visibility::Collapsed);
+                } else {
+                    btn.Visibility(Visibility::Visible);
+                }
+                if (auto ct = btn.Content().try_as<TextBlock>()) {
+                    RepeatMode mode = g_repeatMode.load();
+                    const wchar_t* glyph;
+                    switch (mode) {
+                        case RepeatMode::Off:
+                            glyph = L"";
+                            break;
+                        case RepeatMode::All:
+                            glyph = L"";
+                            break;
+                        case RepeatMode::One:
+                            glyph = L"";
+                            break;
+                    }
+                    ct.Text(winrt::hstring(glyph));
+                    ct.Foreground(MakeBrush(ButtonColor()));
+                    if (!supported && !g_settings.hideUnsupportedButtons) {
+                        ct.Opacity(0.35);
+                    } else {
+                        ct.Opacity(1.0);
+                    }
+                }
+            } catch (...) {}
+    if (auto fe = FindChildByName(view.root, kSwitchSessionsBtnName))
+        if (auto btn = fe.try_as<Button>())
+            try {
+                bool supported = g_sessionCount.load() > 1;
+                btn.IsEnabled(supported);
+                if (g_settings.hideUnsupportedButtons) {
+                    btn.Visibility(supported ? Visibility::Visible : Visibility::Collapsed);
+                } else {
+                    btn.Visibility(Visibility::Visible);
+                }
+                if (auto ct = btn.Content().try_as<TextBlock>()) {
+                    ct.Opacity(supported ? 1.0 : 0.35);
+                    ct.Foreground(MakeBrush(ButtonColor()));
+                }
+            } catch (...) {}
+    if (g_settings.showPauseOverlay && g_settings.showAlbumArt) {
+        if (auto fe = FindChildByName(view.root, L"PauseIconOverlay"))
+            if (auto overlay = fe.try_as<Border>()) {
+                try {
+                    bool showPause = !isPlaying;
+                    overlay.Visibility(showPause ? Visibility::Visible : Visibility::Collapsed);
+                    if (auto pauseIcon = overlay.Child().try_as<TextBlock>()) {
+                        pauseIcon.Text(GetGlyph(2, true));
+                        bool useFluent = (g_settings.iconStyle == L"fluent_outline" || g_settings.iconStyle == L"fluent_filled");
+                        pauseIcon.FontFamily(Media::FontFamily(useFluent ? L"Segoe Fluent Icons" : L"Segoe MDL2 Assets"));
+                        pauseIcon.FontSize((double)g_settings.pauseOverlayIconSize);
+                    }
+                    if (showPause) {
+                        if (auto artImg = FindChildByName(view.root, kArtImageName)) {
+                            if (auto parent = VisualTreeHelper::GetParent(artImg)) {
+                                if (auto artInnerGrid = parent.try_as<Grid>()) {
+                                    for (uint32_t i = 0; i < artInnerGrid.Children().Size(); ++i) {
+                                        auto child = artInnerGrid.Children().GetAt(i);
+                                        if (auto border = child.try_as<Border>()) {
+                                            if (border.Name() == L"EmptyIconBorder") {
+                                                border.Visibility(Visibility::Collapsed);
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } catch (...) {}
+            }
+    }
+    bool paletteChanged = false;
+    if (auto fe = FindChildByName(view.root, kArtImageName))
+        if (auto img = fe.try_as<Controls::Image>()) {
+            if (!thumbBytes.empty() && g_settings.showAlbumArt) {
+                bool isSameAlbum = (!view.cachedThumbnailBytes.empty() &&
+                                title == view.cachedAlbumTitle &&
+                                artist == view.cachedAlbumArtist &&
+                                thumbBytes == view.cachedThumbnailBytes);
+                size_t newHash = (size_t)thumbHash;
+                if (newHash != g_cachedPaletteHash && newHash != 0) {
+                    g_cachedAlbumPalette = ExtractAlbumPalette(thumbBytes);
+                    g_cachedPaletteHash = newHash;
+                    g_vizPaletteColorsDirty = true;
+                    paletteChanged = true;
+                }
+                if (!isSameAlbum) {
+                    try {
+                        IStream* pRawStream = SHCreateMemStream(
+                            thumbBytes.data(), static_cast<UINT>(thumbBytes.size()));
+                        if (pRawStream) {
+                            winrt::com_ptr<IStream> comStream;
+                            comStream.attach(pRawStream);
+                            winrt::Windows::Storage::Streams::IRandomAccessStream rasStream{ nullptr };
+                            ::CreateRandomAccessStreamOverStream(
+                                comStream.get(),
+                                BSOS_DEFAULT,
+                                winrt::guid_of<winrt::Windows::Storage::Streams::IRandomAccessStream>(),
+                                winrt::put_abi(rasStream));
+                            if (rasStream) {
+                                BitmapImage bmp;
+                                if (g_settings.albumArtQuality == L"low") {
+                                    int baseHeight = g_settings.albumArtMaxHeight > 0 ? g_settings.albumArtMaxHeight : 64;
+                                    int decodeHeight = baseHeight / 2;
+                                    if (decodeHeight < 16) decodeHeight = 16;
+                                    bmp.DecodePixelHeight(decodeHeight);
+                                } else if (g_settings.albumArtQuality == L"medium") {
+                                    if (g_settings.albumArtMaxHeight > 0) {
+                                        bmp.DecodePixelHeight(g_settings.albumArtMaxHeight);
+                                    }
+                                }
+                                bmp.ImageOpened([root = view.root](auto const&, auto const&) {
+                                    if (g_unloading || g_applyingSettings || !root) return;
+                                    try {
+                                        if (auto panelFe = FindChildByName(root, kPanelGridName)) {
+                                            panelFe.UpdateLayout();
+                                        }
+                                        g_needsUiUpdate = true;
+                                        if (g_timerUpdateEvent) SetEvent(g_timerUpdateEvent);
+                                    } catch (...) {}
+                                });
+                                img.Source(bmp);
+                                bmp.SetSourceAsync(rasStream);
+                                img.Visibility(Visibility::Visible);
+                                view.cachedAlbumTitle = title;
+                                view.cachedAlbumArtist = artist;
+                                view.cachedThumbnailBytes = thumbBytes;
+                                if (auto parent = VisualTreeHelper::GetParent(img)) {
+                                    if (auto artInnerGrid = parent.try_as<Grid>()) {
+                                        if (auto grandParent = VisualTreeHelper::GetParent(artInnerGrid)) {
+                                            if (auto container = grandParent.try_as<FrameworkElement>()) {
+                                                if (auto greatGrandParent = VisualTreeHelper::GetParent(container)) {
+                                                    if (auto artContainer = greatGrandParent.try_as<Grid>()) {
+                                                        artContainer.Visibility(Visibility::Visible);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        for (uint32_t i = 0; i < artInnerGrid.Children().Size(); ++i) {
+                                            auto child = artInnerGrid.Children().GetAt(i);
+                                            if (auto border = child.try_as<Border>()) {
+                                                if (border.Name() == L"EmptyIconBorder") {
+                                                    border.Visibility(Visibility::Collapsed);
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } catch (...) { try { img.Source(nullptr); } catch (...) {} }
+                } else {
+                    img.Visibility(Visibility::Visible);
+                    if (auto parent = VisualTreeHelper::GetParent(img)) {
+                        if (auto container = parent.try_as<FrameworkElement>()) {
+                            if (auto grandParent = VisualTreeHelper::GetParent(container)) {
+                                if (auto greatGrandParent = VisualTreeHelper::GetParent(grandParent)) {
+                                    if (auto artContainer = greatGrandParent.try_as<Grid>()) {
+                                        artContainer.Visibility(Visibility::Visible);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if (auto bgFe = FindChildByName(view.root, L"FluentMedia_Background")) {
+                    if (auto bgBorder = bgFe.try_as<Border>()) {
+                        auto& bgType = g_settings.backgroundType;
+                        if (bgType == L"album_art_blur") {
+                            try {
+                                g_blurBgCache.Invalidate();
+                                bgBorder.Visibility(Visibility::Visible);
+                                bgBorder.Opacity(g_settings.blurOpacity / 100.0);
+                                auto applyBlur = [bgBorder, thumbBytesSnap = thumbBytes]() {
+                                    try {
+                                        int w = (int)bgBorder.ActualWidth();
+                                        int h = (int)bgBorder.ActualHeight();
+                                        if (w <= 0 || h <= 0) return;
+                                        g_blurBgCache.Invalidate();
+                                        bgBorder.Background(MakeAlbumBlurBrush(thumbBytesSnap, w, h));
+                                        bgBorder.Opacity(g_settings.blurOpacity / 100.0);
+                                        bgBorder.Visibility(Visibility::Visible);
+                                    } catch (...) {}
+                                };
+                                if (bgBorder.ActualWidth() > 0 && bgBorder.ActualHeight() > 0) {
+                                    applyBlur();
+                                } else {
+                                    auto tokenHolder = std::make_shared<winrt::event_token>();
+                                    *tokenHolder = bgBorder.SizeChanged(
+                                        [applyBlur, bgBorder, tokenHolder](auto const&, auto const&) mutable {
+                                            applyBlur();
+                                            try { bgBorder.SizeChanged(*tokenHolder); } catch (...) {}
+                                        });
+                                }
+                            } catch (...) {}
+                        } else if (bgType == L"solid" || bgType == L"gradient" || bgType == L"acrylic" || bgType == L"mica" || bgType == L"mica_alt") {
+                            try {
+                                bgBorder.Background(MakeBackgroundBrush());
+                                bgBorder.Visibility(Visibility::Visible);
+                                bgBorder.Opacity(1.0);
+                            } catch (...) {}
+                        }
+                    }
+                }
+            } else {
+                view.cachedAlbumTitle.clear();
+                view.cachedAlbumArtist.clear();
+                view.cachedThumbnailBytes.clear();
+                g_cachedPaletteHash = 0;
+                g_blurBgCache.Invalidate();
+                if (auto bgFe = FindChildByName(view.root, L"FluentMedia_Background")) {
+                    if (auto bgBorder = bgFe.try_as<Border>()) {
+                        try {
+                            auto& bgType = g_settings.backgroundType;
+                            if (bgType == L"solid" || bgType == L"gradient" || bgType == L"acrylic" ||
+                                bgType == L"mica" || bgType == L"mica_alt") {
+                                bgBorder.Background(MakeBackgroundBrush());
+                                bgBorder.Visibility(Visibility::Visible);
+                                bgBorder.Opacity(1.0);
+                            } else {
+                                bgBorder.Background(nullptr);
+                                bgBorder.Visibility(Visibility::Collapsed);
+                            }
+                        } catch (...) {}
+                    }
+                }
+                try {
+                    img.Source(nullptr);
+                    img.Visibility(Visibility::Collapsed);
+                    if (g_settings.albumArtEmptyBehavior == L"hide" && thumbBytes.empty()) {
+                        if (auto parent = VisualTreeHelper::GetParent(img)) {
+                            if (auto container = parent.try_as<FrameworkElement>()) {
+                                if (auto grandParent = VisualTreeHelper::GetParent(container)) {
+                                    if (auto greatGrandParent = VisualTreeHelper::GetParent(grandParent)) {
+                                        if (auto artContainer = greatGrandParent.try_as<FrameworkElement>()) {
+                                            artContainer.Visibility(Visibility::Collapsed);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else if (g_settings.albumArtEmptyBehavior == L"show_icon" && thumbBytes.empty()) {
+                        if (auto parent = VisualTreeHelper::GetParent(img)) {
+                            if (auto artInnerGrid = parent.try_as<Grid>()) {
+                                if (auto grandParent = VisualTreeHelper::GetParent(artInnerGrid)) {
+                                    if (auto container = grandParent.try_as<FrameworkElement>()) {
+                                        if (auto greatGrandParent = VisualTreeHelper::GetParent(container)) {
+                                            if (auto artContainer = greatGrandParent.try_as<Grid>()) {
+                                                artContainer.Visibility(Visibility::Visible);
+                                            }
+                                        }
+                                    }
+                                }
+                                Border iconBorder = nullptr;
+                                for (uint32_t i = 0; i < artInnerGrid.Children().Size(); ++i) {
+                                    auto child = artInnerGrid.Children().GetAt(i);
+                                    if (auto border = child.try_as<Border>()) {
+                                        if (border.Name() == L"EmptyIconBorder") {
+                                            iconBorder = border;
+                                            break;
+                                        }
+                                    }
+                                }
+                                if (!iconBorder) {
+                                    iconBorder = Border();
+                                    iconBorder.Name(L"EmptyIconBorder");
+                                    iconBorder.Background(MakeBrush({0x00, 0x00, 0x00, 0x00}));
+                                    iconBorder.HorizontalAlignment(HorizontalAlignment::Stretch);
+                                    iconBorder.VerticalAlignment(VerticalAlignment::Stretch);
+                                    Canvas::SetZIndex(iconBorder, 5);
+                                    TextBlock iconText = TextBlock();
+                                    iconText.Name(L"EmptyIconText");
+                                    iconText.HorizontalAlignment(HorizontalAlignment::Center);
+                                    iconText.VerticalAlignment(VerticalAlignment::Center);
+                                    iconBorder.Child(iconText);
+                                    artInnerGrid.Children().InsertAt(0, iconBorder);
+                                }
+                                if (auto textBlock = iconBorder.Child().try_as<TextBlock>()) {
+                                    std::wstring glyphStr;
+                                    try {
+                                        unsigned long cp = std::stoul(g_settings.emptyIconGlyph, nullptr, 16);
+                                        if (cp <= 0xFFFF) {
+                                            glyphStr = std::wstring(1, (wchar_t)cp);
+                                        } else {
+                                            cp -= 0x10000;
+                                            glyphStr += (wchar_t)(0xD800 + (cp >> 10));
+                                            glyphStr += (wchar_t)(0xDC00 + (cp & 0x3FF));
+                                        }
+                                    } catch (...) {
+                                        glyphStr = L"\uE189";
+                                    }
+                                    textBlock.Text(glyphStr);
+                                    bool useFluent = (g_settings.emptyIconFont == L"segoe_fluent");
+                                    textBlock.FontFamily(Media::FontFamily(
+                                        useFluent ? L"Segoe Fluent Icons" : L"Segoe MDL2 Assets"));
+                                    textBlock.FontSize((double)g_settings.emptyIconSize);
+                                    BYTE alpha = (BYTE)std::clamp((int)std::round(g_settings.emptyIconOpacity * 255.0 / 100.0), 0, 255);
+                                    auto iconClr = ParseColorWithThemeSupport(g_settings.emptyIconColor, alpha);
+                                    textBlock.Foreground(MakeBrush(iconClr));
+                                }
+                                iconBorder.Visibility(Visibility::Visible);
+                            }
+                        }
+                    }
+                } catch (...) {}
+            }
+        }
+    if (paletteChanged) {
+        try {
+            if (g_settings.backgroundType == L"gradient" ||
+                g_settings.backgroundType == L"solid" ||
+                g_settings.backgroundType == L"acrylic" ||
+                g_settings.backgroundType == L"mica" ||
+                g_settings.backgroundType == L"mica_alt") {
+                if (auto bgFe = FindChildByName(view.root, L"FluentMedia_Background")) {
+                    if (auto bgBorder = bgFe.try_as<Border>()) {
+                        bgBorder.Background(MakeBackgroundBrush());
+                    }
+                }
+            }
+            auto textClr = TextColor();
+            auto artistClr = ArtistColor();
+            if (auto titleFe = FindChildByName(view.root, kTitleBlockName)) {
+                if (auto titleBlock = titleFe.try_as<TextBlock>()) {
+                    titleBlock.Foreground(SolidColorBrush(textClr));
+                }
+            }
+            if (auto artistFe = FindChildByName(view.root, kArtistBlockName)) {
+                if (auto artistBlock = artistFe.try_as<TextBlock>()) {
+                    artistBlock.Foreground(SolidColorBrush(artistClr));
+                }
+            }
+            auto buttonClr = ButtonColor();
+            for (const auto& btnName : {kPlayBtnName, kPrevBtnName, kNextBtnName,
+                                        kRewindBtnName, kForwardBtnName, kShuffleBtnName, kRepeatBtnName}) {
+                if (auto btnFe = FindChildByName(view.root, btnName)) {
+                    if (auto btn = btnFe.try_as<Button>()) {
+                        if (auto content = btn.Content()) {
+                            if (auto icon = content.try_as<TextBlock>()) {
+                                icon.Foreground(SolidColorBrush(buttonClr));
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (...) {}
+    }
+    if (g_settings.showAppIcon) {
+        if (auto fe = FindChildByName(view.root, kAppIconImageName))
+            if (auto img = fe.try_as<Controls::Image>()) {
+                bool sizeChanged = (view.cachedAppIconSize != g_settings.appIconSize);
+                if (sizeChanged && !appIconBytes.empty()) {
+                    view.cachedAppIconSize = g_settings.appIconSize;
+                    FetchMediaPropertiesAsync();
+                }
+                if (!appIconBytes.empty()) {
+                    try {
+                        int iconSz = g_settings.appIconSize;
+                        size_t expectedBytes = (size_t)iconSz * iconSz * 4;
+                        if (appIconBytes.size() != expectedBytes) {
+                            int computed = (int)std::sqrt((double)appIconBytes.size() / 4.0);
+                            if (computed > 0 && (size_t)computed * computed * 4 == appIconBytes.size())
+                                iconSz = computed;
+                        }
+                        img.Width(iconSz);
+                        img.Height(iconSz);
+                        size_t bytesNeeded = (size_t)iconSz * iconSz * 4;
+                        winrt::Windows::UI::Xaml::Media::Imaging::WriteableBitmap wb(iconSz, iconSz);
+                        auto buf = wb.PixelBuffer();
+                        auto bufferByteAccess = buf.as<Windows::Storage::Streams::IBufferByteAccess>();
+                        BYTE* pixels = nullptr;
+                        bufferByteAccess->Buffer(&pixels);
+                        if (appIconBytes.size() >= bytesNeeded && pixels) {
+                            for (size_t i = 0; i + 3 < bytesNeeded; i += 4) {
+                                pixels[i+0] = appIconBytes[i+2];
+                                pixels[i+1] = appIconBytes[i+1];
+                                pixels[i+2] = appIconBytes[i+0];
+                                pixels[i+3] = appIconBytes[i+3];
+                            }
+                        }
+                        buf.Length(static_cast<uint32_t>(bytesNeeded));
+                        wb.Invalidate();
+                        img.Source(wb);
+                        img.Visibility(Visibility::Visible);
+                    } catch (...) {
+                        try { img.Source(nullptr); img.Visibility(Visibility::Collapsed); } catch (...) {}
+                    }
+                } else {
+                    try { img.Source(nullptr); img.Visibility(Visibility::Collapsed); } catch (...) {}
+                }
+            }
+    }
+    try {
+        FrameworkElement tooltipHost = view.root;
+        if (g_settings.showFullTitleOnHover && hasSession && (!title.empty() || !artist.empty())) {
+            std::wstring tooltipText;
+            if (!title.empty())  tooltipText += title;
+            if (!title.empty() && !artist.empty()) tooltipText += L"\n\n";
+            if (!artist.empty()) tooltipText += artist;
+            if (view.tooltip) {
+                try {
+                    auto content = view.tooltip.Content();
+                    if (auto ttText = content.try_as<TextBlock>()) {
+                        ttText.Text(winrt::hstring(tooltipText));
+                    }
+                    view.tooltip.IsEnabled(true);
+                } catch (...) {}
+                if (tooltipHost) {
+                    try { ToolTipService::SetToolTip(tooltipHost, view.tooltip); } catch (...) {}
+                }
+            }
+        } else {
+            if (view.tooltip) {
+                try {
+                    auto content = view.tooltip.Content();
+                    if (auto ttText = content.try_as<TextBlock>()) {
+                        ttText.Text(L"");
+                    }
+                    view.tooltip.IsEnabled(false);
+                } catch (...) {}
+            }
+
+
+            if (tooltipHost) {
+                try { ToolTipService::SetToolTip(tooltipHost, nullptr); } catch (...) {}
+            }
+        }
+    } catch (...) {}
+    // Flyout UI belongs to the primary player.
+}
+
+static void UpdateSecondaryVisibility(SecondaryMediaView& view) {
+    if (!view.root) return;
+    bool hide = g_hiddenByIdle;
+    if (g_settings.hideFullscreen && IsFullscreenActive()) hide = true;
+    bool hasMedia = false, hasSession = false;
+    { std::lock_guard<std::mutex> lock(g_mediaMtx); hasMedia = g_media.hasMedia; }
+    { std::lock_guard<std::mutex> lock(g_sessionMtx); hasSession = g_currentSession != nullptr; }
+    if (g_settings.hideWhenNoMedia && !hasSession && !hasMedia) hide = true;
+    try {
+        view.root.Visibility(hide ? Visibility::Collapsed : Visibility::Visible);
+        view.root.Opacity(hide ? 0 : 1);
+    } catch (...) {}
+}
+static void SecondaryFrameTick(HWND hwnd) {
+    if (g_unloading || g_applyingSettings) return;
+    auto* view = FindSecondaryMediaView(hwnd);
+    if (!view || !view->root) return;
+    if (g_settings.vizEnabled && view->root.Visibility() == Visibility::Visible) {
+        try { VizApplySecondaryFrame(*view); } catch (...) {}
+    }
+    if (g_settings.enableTitleScrolling || g_settings.enableArtistScrolling) {
+        if (view->titleScroll.active || view->artistScroll.active) {
+            int step = std::max(1, g_settings.scrollSpeed);
+            TickScrollState(view->titleScroll, step, g_settings.scrollPauseDuration, g_settings.scrollMode);
+            TickScrollState(view->artistScroll, step, g_settings.scrollPauseDuration, g_settings.scrollMode);
+            try { UpdateSecondaryScrollTransforms(*view); } catch (...) {}
+        }
+    }
+}
+static void RemoveSecondaryMediaViewOnThread(HWND hwnd) {
+    for (auto it = g_secondaryMediaViews.begin(); it != g_secondaryMediaViews.end();) {
+        if (it->hwnd != hwnd) { ++it; continue; }
+        try {
+            if (it->frameTimer) {
+                it->frameTimer.Stop();
+                it->frameTimer.Tick(it->frameToken);
+                it->frameTimer = nullptr;
+            }
+            if (it->target && it->anchorLayoutToken.value) {
+                it->target.LayoutUpdated(it->anchorLayoutToken);
+                it->anchorLayoutToken = {};
+            }
+            if (it->anchorElement) {
+                // Restore the original taskbar margin for every tracked button.
+                try { it->anchorElement.Margin(it->anchorOriginalMargin); } catch (...) {}
+                it->anchorElement = nullptr;
+            }
+            if (it->root && it->target) {
+                auto children = it->target.Children();
+                for (uint32_t i = 0; i < children.Size(); ++i) {
+                    if (children.GetAt(i) == it->root) { children.RemoveAt(i); break; }
+                }
+                if (it->addedColumn && it->insertedColumn >= 0 &&
+                    it->insertedColumn < (int)it->target.ColumnDefinitions().Size()) {
+                    int col = it->insertedColumn;
+                    for (uint32_t i = 0; i < children.Size(); ++i) {
+                        if (auto child = children.GetAt(i).try_as<FrameworkElement>()) {
+                            int childCol = Grid::GetColumn(child);
+                            if (childCol > col) Grid::SetColumn(child, childCol - 1);
+                        }
+                    }
+                    it->target.ColumnDefinitions().RemoveAt(col);
+                }
+            }
+        } catch (...) { Wh_Log(L"Mirror: secondary removal failed"); }
+        it = g_secondaryMediaViews.erase(it);
+    }
+}
+static void RefreshSecondaryMediaViewOnThread(HWND hwnd) {
+    if (g_unloading || g_applyingSettings) return;
+    auto* view = FindSecondaryMediaView(hwnd);
+    if (!view) return;
+    if (view->lastLightTheme != IsSystemLightTheme()) {
+        view->lastLightTheme = IsSystemLightTheme();
+        // The XAML style and hover brushes are owned by the UI thread that
+        // created this view. Restore the primary globals immediately afterward.
+        std::swap(g_fluentMediaButtonStyle, view->buttonStyle);
+        std::swap(g_mediaHoverBrush, view->mediaHoverBrush);
+        std::swap(g_mediaPressedBrush, view->mediaPressedBrush);
+        std::swap(g_playerHoverBrush, view->playerHoverBrush);
+        std::swap(g_playerPressedBrush, view->playerPressedBrush);
+        std::swap(g_playerBorderBrush, view->playerBorderBrush);
+        std::swap(g_playerBorderPressedBrush, view->playerBorderPressedBrush);
+        try { RefreshSecondaryThemeColors(*view); } catch (...) {}
+        std::swap(g_playerBorderPressedBrush, view->playerBorderPressedBrush);
+        std::swap(g_playerBorderBrush, view->playerBorderBrush);
+        std::swap(g_playerPressedBrush, view->playerPressedBrush);
+        std::swap(g_playerHoverBrush, view->playerHoverBrush);
+        std::swap(g_mediaPressedBrush, view->mediaPressedBrush);
+        std::swap(g_mediaHoverBrush, view->mediaHoverBrush);
+        std::swap(g_fluentMediaButtonStyle, view->buttonStyle);
+    }
+    try {
+        RefreshSecondaryContents(*view);
+        UpdateSecondaryVisibility(*view);
+    } catch (...) { Wh_Log(L"Mirror: secondary refresh failed"); }
+}
+// On secondary taskbars the Widgets (AugmentedEntryPointButton) is normally
+// absent.  Unlike the previous mirror implementation, follow the real XAML
+// anchor and reserve layout space, just as InjectPlayerGrid() does on primary.
+// If there is no matching anchor, optionally use Start as a fallback.
+static FrameworkElement FindSecondaryStartAnchor(Grid const& target) {
+    auto repeater = FindChildByName(target, L"TaskbarFrameRepeater");
+    if (repeater) {
+        auto found = FindElementInRepeater(repeater, kStartButtonNames, ARRAYSIZE(kStartButtonNames));
+        if (found) return found;
+    }
+    // Secondary taskbar trees differ between Windows builds; accept nested
+    // StartButton instances rather than assuming the primary tree shape.
+    for (auto name : kStartButtonNames) {
+        if (auto found = FindChildByName(target, name)) return found;
+    }
+    return nullptr;
+}
+static FrameworkElement FindSecondarySearchAnchor(Grid const& target) {
+    auto repeater = FindChildByName(target, L"TaskbarFrameRepeater");
+    if (!repeater) return nullptr;
+    auto found = FindElementByClassName(repeater, L"Taskbar.TaskbarExtensionElement");
+    if (!found) found = FindChildByClassName(repeater, L"Taskbar.TaskbarExtensionElement");
+    if (!found) {
+        for (auto name : { L"SearchButton", L"SearchBox", L"SearchBoxButton" }) {
+            found = FindChildByName(repeater, name);
+            if (found) break;
+        }
+    }
+    return found;
+}
+static FrameworkElement FindSecondaryTaskViewAnchor(Grid const& target) {
+    auto repeater = FindChildByName(target, L"TaskbarFrameRepeater");
+    if (!repeater) return nullptr;
+    // Prefer a semantic name. The second ExperienceToggleButton is not always
+    // Task View on secondary taskbars or on different Windows 11 builds.
+    for (auto name : { L"TaskViewButton", L"TaskViewToggleButton", L"TaskViewButtonContainer" }) {
+        if (auto found = FindChildByName(repeater, name)) return found;
+    }
+    auto found = FindNthElementByClassName(repeater, L"Taskbar.ExperienceToggleButton", 1);
+    if (!found) found = FindChildByClassName(repeater, L"Taskbar.ExperienceToggleButton");
+    return found;
+}
+static FrameworkElement FindSecondaryWidgetsAnchor(Grid const& target) {
+    auto repeater = FindChildByName(target, L"TaskbarFrameRepeater");
+    if (!repeater) return nullptr;
+    auto found = FindChildByName(repeater, L"AugmentedEntryPointButton");
+    if (!found) found = FindChildByClassName(repeater, L"Taskbar.AugmentedEntryPointButton");
+    return found;
+}
+static FrameworkElement FindSecondaryPositionAnchor(
+    Grid const& target, bool& left, bool& fallback) {
+    const auto& position = g_settings.position;
+    left = position == L"taskbar_left_start" ||
+           position == L"taskbar_after_search_left" ||
+           position == L"taskbar_after_taskview_left" ||
+           position == L"taskbar_after_widgets_left";
+    fallback = false;
+    FrameworkElement anchor = nullptr;
+    if (position == L"taskbar_left_start" || position == L"taskbar_right_start") {
+        anchor = FindSecondaryStartAnchor(target);
+    } else if (position == L"taskbar_after_search_left" ||
+               position == L"taskbar_after_search_right") {
+        anchor = FindSecondarySearchAnchor(target);
+    } else if (position == L"taskbar_after_taskview_left" ||
+               position == L"taskbar_after_taskview_right") {
+        anchor = FindSecondaryTaskViewAnchor(target);
+        if (!anchor && g_settings.mirrorMissingAnchor == L"start") {
+            anchor = FindSecondarySearchAnchor(target);
+            fallback = anchor != nullptr;
+        }
+    } else if (position == L"taskbar_after_widgets_left" ||
+               position == L"taskbar_after_widgets_right") {
+        anchor = FindSecondaryWidgetsAnchor(target);
+        // Keep Widgets -> Start fallback, as this is already verified by the user.
+    } else {
+        return nullptr; // taskbar edges and tray use independent layout handling
+    }
+    if (!anchor && g_settings.mirrorMissingAnchor == L"start") {
+        anchor = FindSecondaryStartAnchor(target);
+        fallback = anchor != nullptr;
+    }
+    return anchor;
+}
+static void AlignSecondaryMediaView(SecondaryMediaView& view) {
+    if (!view.root || !view.target || g_unloading) return;
+    try {
+        // The right-edge overlay must avoid the tray, just like the original
+        // single-screen implementation. Do this on LayoutUpdated because
+        // the tray width can be zero until the secondary XAML tree is ready.
+        if (view.rightEdgeNeedsTrayClearance) {
+            double right = (double)g_settings.playerMarginRight -
+                           (double)g_settings.mirrorSecondaryOffsetX;
+            if (auto tray = FindChildByName(view.target, L"SystemTrayFrameGrid")) {
+                if (tray.Visibility() == Visibility::Visible)
+                    right += tray.ActualWidth() + 4.0;
+            }
+            auto margin = view.root.Margin();
+            if (std::abs(margin.Right - right) > 0.75)
+                view.root.Margin({margin.Left, 0, right, 0});
+            return;
+        }
+        if (!view.anchorElement) return;
+        bool visible = view.root.Visibility() == Visibility::Visible;
+        double width = visible ? view.root.ActualWidth() : 0.0;
+        // Use the *actual* player width, including custom text sizes and visualizer.
+        double gap = visible ? width + g_settings.playerMarginLeft + g_settings.playerMarginRight : 0.0;
+        auto actualMargin = view.anchorElement.Margin();
+        auto wantedMargin = view.anchorOriginalMargin;
+        if (view.anchorOnLeft) wantedMargin.Left += gap;
+        else wantedMargin.Right += gap;
+        double current = view.anchorOnLeft ? actualMargin.Left : actualMargin.Right;
+        double desired = view.anchorOnLeft ? wantedMargin.Left : wantedMargin.Right;
+        if (std::abs(current - desired) > 0.75) {
+            view.anchorElement.Margin(wantedMargin);
+        }
+        if (!visible) return;
+        auto transform = view.anchorElement.TransformToVisual(view.target);
+        auto point = transform.TransformPoint({0, 0});
+        double x = view.anchorOnLeft
+            ? point.X - gap + g_settings.playerMarginLeft
+            : point.X + view.anchorElement.ActualWidth() + g_settings.playerMarginLeft;
+        x += g_settings.mirrorSecondaryOffsetX;
+        // Negative margins cause the player to be clipped at the taskbar edge.
+        x = std::max(0.0, x);
+        auto currentPlayerMargin = view.root.Margin();
+        if (std::abs(currentPlayerMargin.Left - x) > 0.75 ||
+            std::abs(currentPlayerMargin.Right) > 0.75) {
+            view.root.Margin({x, 0, 0, 0});
+        }
+    } catch (...) {
+        Wh_Log(L"Mirror: secondary anchor alignment failed for %p", view.hwnd);
+    }
+}
+
+static void CreateSecondaryMediaViewOnThread(HWND hwnd) {
+    if (g_unloading || !g_settings.mirrorAllMonitors ||
+        !IsWindow(hwnd) || hwnd == g_taskbarWnd || FindSecondaryMediaView(hwnd)) return;
+    try {
+        auto xamlRoot = GetTaskbarXamlRoot(hwnd);
+        if (!xamlRoot) return; // retry when secondary XAML root becomes ready
+        auto content = xamlRoot.Content().try_as<FrameworkElement>();
+        if (!content) return; // retry while Explorer is creating taskbar UI
+        auto [target, insertionColumn] = ResolveInjectionTarget(content, g_settings.position);
+        bool intoTray = target && target.Name() == L"SystemTrayFrameGrid" && insertionColumn >= 0;
+        if (!target) target = FindTaskbarRootGrid(content);
+        if (!target || target.ActualWidth() < 1.0 || target.ActualHeight() < 1.0)
+            return; // Explorer is still building this secondary taskbar
+
+        g_secondaryMediaViews.emplace_back();
+        auto& view = g_secondaryMediaViews.back();
+        view.hwnd = hwnd;
+        view.target = target;
+        view.lastLightTheme = IsSystemLightTheme();
+
+        // BuildPlayerGrid uses global single-instance references for its own
+        // construction; temporarily isolate and restore those values.
+        std::swap(*g_vizBars, view.vizBars);
+        std::swap(*g_vizBrushes, view.vizBrushes);
+        auto primaryUpdater = std::move(g_playerButtonStateUpdater);
+        auto primaryTooltip = g_playerToolTip;
+        auto primaryStyle = g_fluentMediaButtonStyle;
+        auto primaryMediaHover = g_mediaHoverBrush;
+        auto primaryMediaPressed = g_mediaPressedBrush;
+        auto primaryPlayerHover = g_playerHoverBrush;
+        auto primaryPlayerPressed = g_playerPressedBrush;
+        auto primaryPlayerBorder = g_playerBorderBrush;
+        auto primaryPlayerBorderPressed = g_playerBorderPressedBrush;
+        g_playerButtonStateUpdater = {};
+        g_playerToolTip = nullptr;
+        g_fluentMediaButtonStyle = nullptr;
+        g_mediaHoverBrush = nullptr;
+        g_mediaPressedBrush = nullptr;
+        g_playerHoverBrush = nullptr;
+        g_playerPressedBrush = nullptr;
+        g_playerBorderBrush = nullptr;
+        g_playerBorderPressedBrush = nullptr;
+        Grid mirrorRoot = BuildPlayerGrid(hwnd);
+        view.buttonUpdater = std::move(g_playerButtonStateUpdater);
+        view.tooltip = g_playerToolTip;
+        view.buttonStyle = g_fluentMediaButtonStyle;
+        view.mediaHoverBrush = g_mediaHoverBrush;
+        view.mediaPressedBrush = g_mediaPressedBrush;
+        view.playerHoverBrush = g_playerHoverBrush;
+        view.playerPressedBrush = g_playerPressedBrush;
+        view.playerBorderBrush = g_playerBorderBrush;
+        view.playerBorderPressedBrush = g_playerBorderPressedBrush;
+        g_playerButtonStateUpdater = std::move(primaryUpdater);
+        g_playerToolTip = primaryTooltip;
+        g_fluentMediaButtonStyle = primaryStyle;
+        g_mediaHoverBrush = primaryMediaHover;
+        g_mediaPressedBrush = primaryMediaPressed;
+        g_playerHoverBrush = primaryPlayerHover;
+        g_playerPressedBrush = primaryPlayerPressed;
+        g_playerBorderBrush = primaryPlayerBorder;
+        g_playerBorderPressedBrush = primaryPlayerBorderPressed;
+        std::swap(*g_vizBars, view.vizBars);
+        std::swap(*g_vizBrushes, view.vizBrushes);
+        if (!mirrorRoot) {
+            g_secondaryMediaViews.pop_back();
+            return;
+        }
+        view.root = mirrorRoot;
+        if (intoTray) {
+            ColumnDefinition col;
+            col.Width({1.0, GridUnitType::Auto});
+            int sz = (int)target.ColumnDefinitions().Size();
+            int insertAt = std::max(0, std::min(insertionColumn, sz));
+            if (insertAt == sz) target.ColumnDefinitions().Append(col);
+            else {
+                target.ColumnDefinitions().InsertAt(insertAt, col);
+                auto children = target.Children();
+                for (uint32_t i = 0; i < children.Size(); ++i) {
+                    if (auto child = children.GetAt(i).try_as<FrameworkElement>()) {
+                        int oldCol = Grid::GetColumn(child);
+                        if (oldCol >= insertAt) Grid::SetColumn(child, oldCol + 1);
+                    }
+                }
+            }
+            Grid::SetColumn(mirrorRoot, insertAt);
+            view.insertedColumn = insertAt;
+            view.addedColumn = true;
+            mirrorRoot.HorizontalAlignment(HorizontalAlignment::Left);
+            mirrorRoot.Margin({(double)g_settings.playerMarginLeft, 0,
+                               (double)g_settings.playerMarginRight, 0});
+        } else {
+            // Follow the actual XAML anchor on this taskbar instead of blindly
+            // positioning the player at its left/right edge.
+            bool anchorLeft = true, usedFallback = false;
+            auto anchor = FindSecondaryPositionAnchor(target, anchorLeft, usedFallback);
+            view.anchorElement = anchor;
+            view.anchorOnLeft = anchorLeft;
+            view.usingFallbackAnchor = usedFallback;
+            if (anchor) view.anchorOriginalMargin = anchor.Margin();
+            // Every taskbar_* location other than explicit center/right edge
+            // belongs in the task-button region. An absent search/task-view/
+            // Widgets anchor must never send the player over the system tray.
+            bool edgeLeft = g_settings.position != L"taskbar_right_edge" &&
+                            g_settings.position != L"taskbar_center_edge";
+            bool center = g_settings.position == L"taskbar_center_edge";
+            view.rightEdgeNeedsTrayClearance =
+                g_settings.position == L"taskbar_right_edge";
+            mirrorRoot.HorizontalAlignment(anchor ? HorizontalAlignment::Left :
+                (center ? HorizontalAlignment::Center :
+                    (edgeLeft ? HorizontalAlignment::Left : HorizontalAlignment::Right)));
+            double offset = (double)g_settings.mirrorSecondaryOffsetX;
+            double initialLeft = anchor ? 0.0 : (double)g_settings.playerMarginLeft + offset;
+            double initialRight = anchor ? 0.0 : (double)g_settings.playerMarginRight - offset;
+            mirrorRoot.Margin({initialLeft, 0, initialRight, 0});
+            Grid::SetColumn(mirrorRoot, 0);
+            Grid::SetColumnSpan(mirrorRoot, std::max(1, (int)target.ColumnDefinitions().Size()));
+        }
+        Canvas::SetZIndex(mirrorRoot, 1000);
+        target.Children().Append(mirrorRoot);
+        if (view.anchorElement || view.rightEdgeNeedsTrayClearance) {
+            // No raw view pointer is captured: the HWND is resolved against the
+            // live registry on every XAML layout pass.
+            view.anchorLayoutToken = target.LayoutUpdated(
+                [hwnd](auto const&, auto const&) {
+                    if (auto* currentView = FindSecondaryMediaView(hwnd))
+                        AlignSecondaryMediaView(*currentView);
+                });
+            AlignSecondaryMediaView(view);
+            Wh_Log(L"Mirror: positioned on %p, anchor=%d, fallback=%d, tray-clearance=%d", hwnd,
+                   view.anchorElement ? 1 : 0, view.usingFallbackAnchor ? 1 : 0,
+                   view.rightEdgeNeedsTrayClearance ? 1 : 0);
+        }
+
+        // Shared capture thread, separate animation timer/UI shapes per taskbar.
+        if (g_settings.vizEnabled || g_settings.enableTitleScrolling || g_settings.enableArtistScrolling) {
+            view.frameTimer = winrt::Windows::UI::Xaml::DispatcherTimer();
+            view.frameTimer.Interval(winrt::Windows::Foundation::TimeSpan{
+                std::chrono::milliseconds(16)});
+            view.frameToken = view.frameTimer.Tick([hwnd](auto const&, auto const&) {
+                SecondaryFrameTick(hwnd);
+            });
+            view.frameTimer.Start();
+        }
+        RefreshSecondaryMediaViewOnThread(hwnd);
+        Wh_Log(L"Mirror: full player installed on taskbar %p", hwnd);
+    } catch (...) {
+        Wh_Log(L"Mirror: full secondary XAML creation failed");
+        // A failed mirror must never discard or replace the primary.
+        RemoveSecondaryMediaViewOnThread(hwnd);
+    }
+}
+static void UpdateSecondaryMediaViews(bool missingOnly = false) {
+    if (g_unloading || g_applyingSettings || !g_settings.mirrorAllMonitors) return;
+    auto handles = FindAllCurrentProcessTaskbarWnds();
+    for (HWND hwnd : handles) {
+        if (hwnd == g_taskbarWnd) continue;
+        if (missingOnly && FindSecondaryMediaView(hwnd)) continue;
+        bool dispatched = RunFromWindowThread(hwnd, [](void* p) {
+            HWND h = static_cast<HWND>(p);
+            CreateSecondaryMediaViewOnThread(h);
+            RefreshSecondaryMediaViewOnThread(h);
+        }, hwnd);
+        if (!dispatched) {
+            // If Explorer's secondary taskbar thread has not begun processing
+            // messages yet, the discovery timer will try again later.
+            Wh_Log(L"Mirror: secondary taskbar %p not dispatchable yet", hwnd);
+        }
+    }
+}
+[[clang::no_destroy]] static winrt::Windows::UI::Xaml::DispatcherTimer g_mirrorDiscoveryTimer{nullptr};
+static winrt::event_token g_mirrorDiscoveryToken{};
+static void StartMirrorDiscoveryTimerOnPrimaryThread() {
+    if (g_unloading || !g_settings.mirrorAllMonitors) return;
+    try {
+        if (!g_mirrorDiscoveryTimer) {
+            g_mirrorDiscoveryTimer = winrt::Windows::UI::Xaml::DispatcherTimer();
+            g_mirrorDiscoveryTimer.Interval(winrt::Windows::Foundation::TimeSpan{
+                std::chrono::milliseconds(500)});
+            g_mirrorDiscoveryToken = g_mirrorDiscoveryTimer.Tick(
+                [](auto const&, auto const&) {
+                    if (g_unloading || g_applyingSettings) return;
+                    UpdateSecondaryMediaViews();
+                });
+        }
+        if (!g_mirrorDiscoveryTimer.IsEnabled()) g_mirrorDiscoveryTimer.Start();
+    } catch (...) { Wh_Log(L"Mirror: failed to start discovery timer"); }
+}
+static void StopMirrorDiscoveryTimerOnPrimaryThread() {
+    if (!g_mirrorDiscoveryTimer) return;
+    try {
+        g_mirrorDiscoveryTimer.Stop();
+        g_mirrorDiscoveryTimer.Tick(g_mirrorDiscoveryToken);
+        g_mirrorDiscoveryTimer = nullptr;
+        g_mirrorDiscoveryToken = {};
+    } catch (...) { Wh_Log(L"Mirror: failed to stop discovery timer"); }
+}
+static void RemoveAllSecondaryMediaViews() {
+    // Work from tracked entries, not just present EnumWindows results.
+    std::vector<HWND> handles;
+    for (auto const& view : g_secondaryMediaViews) handles.push_back(view.hwnd);
+    for (HWND hwnd : handles) {
+        if (IsWindow(hwnd)) {
+            RunFromWindowThread(hwnd, [](void* p) {
+                RemoveSecondaryMediaViewOnThread(static_cast<HWND>(p));
+            }, hwnd);
+        }
+    }
+    // Unreachable/destroyed HWNDs may have retained stale objects; ensure
+    // the next installation does not falsely consider them alive.
+    if (g_unloading) g_secondaryMediaViews.clear();
+}
+// === End full-style per-monitor media player mirrors ===
+
 static void ApplySettings() {
     g_idleSeconds  = 0;
     g_idleTicks    = 0;
@@ -10132,6 +13898,10 @@ static void WINAPI TrayUI_StartTaskbar_Hook(void* pThis) {
         return;
     }
     ApplySettingsWithRetry(xamlRootContent);
+    RunFromWindowThread(hWnd, [](void*) {
+        StartMirrorDiscoveryTimerOnPrimaryThread();
+        UpdateSecondaryMediaViews();
+    }, nullptr);
 }
 static bool HookTaskbarDllSymbols() {
     static const wchar_t* const kCandidates[] = {
@@ -10190,6 +13960,8 @@ void Wh_ModAfterInit() {
             g_cachedAppIconSize = -1;
             g_blurBgCache.Invalidate();
             ApplySettings();
+            StartMirrorDiscoveryTimerOnPrimaryThread();
+            UpdateSecondaryMediaViews();
             if (g_playerGrid) {
                 ShowSuccessNotification();
                 RefreshPlayerContents();
@@ -10204,7 +13976,13 @@ void Wh_ModAfterInit() {
 }
 void Wh_ModUninit() {
     g_unloading = true;
+    if (g_taskbarWnd && IsWindow(g_taskbarWnd)) {
+        RunFromWindowThread(g_taskbarWnd, [](void*) {
+            StopMirrorDiscoveryTimerOnPrimaryThread();
+        }, nullptr);
+    }
     StopTimerThread();
+    RemoveAllSecondaryMediaViews();
     StopMediaThread();
     WaitForTrackedWorkers();
     if (g_taskbarWnd)
@@ -10244,10 +14022,16 @@ void Wh_ModUninit() {
 }
 void Wh_ModSettingsChanged() {
     g_applyingSettings = true;
+    if (g_taskbarWnd && IsWindow(g_taskbarWnd)) {
+        RunFromWindowThread(g_taskbarWnd, [](void*) {
+            StopMirrorDiscoveryTimerOnPrimaryThread();
+        }, nullptr);
+    }
     g_vizBaseColorDirty = true;
     g_vizPaletteColorsDirty = true;
     g_vizCurrentlyVisible = false;
     StopTimerThread();
+    RemoveAllSecondaryMediaViews();
     LoadSettings();
     HWND hWnd = FindCurrentProcessTaskbarWnd();
     if (!hWnd) hWnd = g_taskbarWnd;
@@ -10277,4 +14061,10 @@ void Wh_ModSettingsChanged() {
     }
     g_applyingSettings = false;
     StartTimerThread();
+    if (g_taskbarWnd && IsWindow(g_taskbarWnd)) {
+        RunFromWindowThread(g_taskbarWnd, [](void*) {
+            StartMirrorDiscoveryTimerOnPrimaryThread();
+            UpdateSecondaryMediaViews();
+        }, nullptr);
+    }
 }
