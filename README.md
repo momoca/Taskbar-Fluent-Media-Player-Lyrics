@@ -4,7 +4,9 @@
 
 A Windows 11 [Windhawk](https://windhawk.net/) mod that places a Fluent-style media player, synchronized lyrics, and an audio visualizer directly on the taskbar. This fork extends [Salyts/Taskbar-Fluent-Media-Player](https://github.com/Salyts/Taskbar-Fluent-Media-Player) with genuine word-timed lyrics and a complete player on every monitor’s taskbar.
 
-Current source version: **`1.6.0-full-mirror-v3-lyrics6`**. See the [complete feature list](Features-and-Player-Support.md) and [technical notes](LYRICS.md).
+Current source version: **`1.6.0-full-mirror-v3-lyrics7`**. See the [complete feature list](Features-and-Player-Support.md) and [technical notes](LYRICS.md).
+
+lyrics7: When native NetEase SMTC omits its timeline, lyrics use a validated, read-only client playback clock. Tested with NetEase 3.1.41.205564 x64. Unavailable clocks hide lyrics; other client versions may require adaptation. See [technical notes](LYRICS.md).
 
 ## 1. Features
 

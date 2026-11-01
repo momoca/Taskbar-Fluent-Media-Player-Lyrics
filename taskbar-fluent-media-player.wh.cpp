@@ -3,7 +3,7 @@
 // @name            Taskbar Fluent Media Player Lyrics
 // @description     A Windows 11 taskbar media player with genuine word-timed lyrics and full-player mirroring across monitors.
 // @description:ru-RU Медиаплеер для панели задач Windows 11 с реальными временными метками слов и полным плеером на каждом мониторе.
-// @version         1.6.0-full-mirror-v3-lyrics6
+// @version         1.6.0-full-mirror-v3-lyrics7
 // @author          Salyts, momoca
 // @github          https://github.com/momoca
 // @description:zh-CN Windows 11 任务栏播放器，支持真实逐字歌词和所有显示器上的完整播放器镜像。
@@ -17,7 +17,7 @@
 # Taskbar Fluent Media Player Lyrics
 
 Fork of Salyts/Taskbar-Fluent-Media-Player, maintained by momoca.
-Source version: 1.6.0-full-mirror-v3-lyrics6.
+Source version: 1.6.0-full-mirror-v3-lyrics7.
 
 [English](https://github.com/momoca/Taskbar-Fluent-Media-Player-Lyrics/blob/main/README.md) | [简体中文](https://github.com/momoca/Taskbar-Fluent-Media-Player-Lyrics/blob/main/README_CN.md) | [Русский](https://github.com/momoca/Taskbar-Fluent-Media-Player-Lyrics/blob/main/README_RU.md)
 
@@ -1448,6 +1448,141 @@ struct PlayerTimelineSmoother {
     }
 };
 // Separate snapshots keep the lyrics worker independent of UI settings reloads.
+#include <tlhelp32.h>
+// Native NetEase SMTC currently omits its timeline. Read only the playback
+// clock referenced by this distinctive pair of x64 stores in cloudmusic.dll.
+// Discovery approach: https://github.com/nczxe/SMTCPlayer (MIT),
+// server/netease_watcher_server.py. No injection or process writes are used.
+struct NeteaseNativeClock {
+    struct Candidate {
+        HANDLE process = nullptr;
+        uintptr_t address = 0;
+        double previous = -1, movement = 0;
+        uint64_t sampled = 0, advancing = 0;
+        unsigned samples = 0;
+        bool validated = false;
+    };
+    std::vector<Candidate> candidates;
+    uint64_t nextScan = 0;
+    ~NeteaseNativeClock() { Clear(); }
+    void Clear() {
+        for (auto& c : candidates) if (c.process) CloseHandle(c.process);
+        candidates.clear();
+    }
+    static bool Read(const Candidate& c, double& value) {
+        SIZE_T read = 0;
+        return ReadProcessMemory(c.process, reinterpret_cast<void*>(c.address), &value,
+                   sizeof(value), &read) && read == sizeof(value) &&
+               std::isfinite(value) && value >= 0 && value <= 86400;
+    }
+    void Discover() {
+        Clear();
+#ifdef _WIN64
+        auto kernel = GetModuleHandleW(L"kernel32.dll");
+        auto moduleFirst = reinterpret_cast<decltype(&Module32FirstW)>(GetProcAddress(kernel, "Module32FirstW"));
+        auto moduleNext = reinterpret_cast<decltype(&Module32NextW)>(GetProcAddress(kernel, "Module32NextW"));
+        if (!moduleFirst || !moduleNext) return;
+        HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+        if (snapshot == INVALID_HANDLE_VALUE) return;
+        PROCESSENTRY32W entry{sizeof(entry)};
+        if (Process32FirstW(snapshot, &entry)) do {
+            if (_wcsicmp(entry.szExeFile, L"cloudmusic.exe")) continue;
+            HANDLE process = OpenProcess(PROCESS_VM_READ | PROCESS_QUERY_INFORMATION,
+                                         FALSE, entry.th32ProcessID);
+            if (!process) continue;
+            HANDLE modules = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32,
+                                                      entry.th32ProcessID);
+            uintptr_t found = 0;
+            MODULEENTRY32W module{sizeof(module)};
+            if (modules != INVALID_HANDLE_VALUE && moduleFirst(modules, &module)) do {
+                if (_wcsicmp(module.szModule, L"cloudmusic.dll")) continue;
+                // Restrict discovery to a bounded image, never scan private heaps.
+                if (module.modBaseSize > 128 * 1024 * 1024) break;
+                std::vector<BYTE> image(module.modBaseSize);
+                SIZE_T size = 0;
+                if (!ReadProcessMemory(process, module.modBaseAddr, image.data(), image.size(), &size)
+                    || size != image.size() || size < sizeof(IMAGE_DOS_HEADER)) break;
+                auto dos = reinterpret_cast<const IMAGE_DOS_HEADER*>(image.data());
+                if (dos->e_magic != IMAGE_DOS_SIGNATURE || dos->e_lfanew < 0 ||
+                    size_t(dos->e_lfanew) + sizeof(IMAGE_NT_HEADERS64) > size) break;
+                auto nt = reinterpret_cast<const IMAGE_NT_HEADERS64*>(image.data() + dos->e_lfanew);
+                if (nt->Signature != IMAGE_NT_SIGNATURE || nt->FileHeader.Machine != IMAGE_FILE_MACHINE_AMD64) break;
+                size_t sectionOffset = size_t(dos->e_lfanew) + offsetof(IMAGE_NT_HEADERS64, OptionalHeader)
+                    + nt->FileHeader.SizeOfOptionalHeader;
+                if (sectionOffset + size_t(nt->FileHeader.NumberOfSections) * sizeof(IMAGE_SECTION_HEADER) > size) break;
+                auto sections = reinterpret_cast<const IMAGE_SECTION_HEADER*>(image.data() + sectionOffset);
+                unsigned matches = 0;
+                for (unsigned s = 0; s < nt->FileHeader.NumberOfSections; ++s) {
+                    const auto& section = sections[s];
+                    if (!(section.Characteristics & IMAGE_SCN_MEM_EXECUTE)) continue;
+                    size_t begin = section.VirtualAddress;
+                    size_t end = std::min<size_t>(size, begin + section.Misc.VirtualSize);
+                    for (size_t i = begin; i + 16 <= end; ++i) {
+                        const BYTE first[] = {0xf2,0x0f,0x11,0x3d}, second[] = {0xf2,0x0f,0x11,0x35};
+                        if (memcmp(image.data()+i, first, 4) || memcmp(image.data()+i+8, second, 4)) continue;
+                        int32_t displacement = 0;
+                        memcpy(&displacement, image.data()+i+4, 4);
+                        int64_t target = int64_t(i) + 8 + displacement;
+                        if (target < 0 || uint64_t(target) + sizeof(double) > size || target % 8) continue;
+                        bool writable = false;
+                        for (unsigned j = 0; j < nt->FileHeader.NumberOfSections; ++j) {
+                            const auto& data = sections[j];
+                            if ((data.Characteristics & IMAGE_SCN_MEM_WRITE) &&
+                                uint64_t(target) >= data.VirtualAddress &&
+                                uint64_t(target)+8 <= uint64_t(data.VirtualAddress)+data.Misc.VirtualSize)
+                                writable = true;
+                        }
+                        if (writable) { found = uintptr_t(module.modBaseAddr) + uintptr_t(target); ++matches; }
+                    }
+                }
+                if (matches != 1) found = 0; // Unknown versions must fail closed.
+                break;
+            } while (moduleNext(modules, &module));
+            if (modules != INVALID_HANDLE_VALUE) CloseHandle(modules);
+            if (found) candidates.push_back({process, found});
+            else CloseHandle(process);
+        } while (Process32NextW(snapshot, &entry));
+        CloseHandle(snapshot);
+#endif
+    }
+    bool Sample(bool playing, double rate, int64_t& positionMs) {
+        uint64_t now = GetTickCount64();
+        bool anyValidated = false;
+        for (auto& c : candidates) anyValidated |= c.validated;
+        if (!anyValidated && now >= nextScan) {
+            Discover();
+            now = GetTickCount64();
+            nextScan = now + 10000;
+        }
+        bool available = false;
+        double selected = 0;
+        for (auto& c : candidates) {
+            double value = 0;
+            if (!Read(c, value)) { c.validated = false; c.previous = -1; c.samples = 0; continue; }
+            if (playing && c.previous >= 0 && now > c.sampled) {
+                double elapsed = (now - c.sampled) / 1000.0;
+                double delta = value - c.previous;
+                if (delta > 0 && std::abs(delta - elapsed * rate) <= std::max(0.12, elapsed * 0.35)) {
+                    c.movement += delta; ++c.samples; c.advancing = now;
+                    if (c.samples >= 3 && c.movement >= 0.6) c.validated = true;
+                } else if (delta != 0) {
+                    // A seek/track change keeps a previously validated clock, but
+                    // an unvalidated candidate must demonstrate continuous motion.
+                    c.samples = 0; c.movement = 0;
+                    if (c.validated) c.advancing = now;
+                }
+                if (c.validated && now - c.advancing > 2500) c.validated = false;
+            }
+            c.previous = value; c.sampled = now;
+            if (c.validated) {
+                if (available && std::abs(selected - value) > 0.5) return false;
+                selected = value; available = true;
+            }
+        }
+        if (available) positionMs = int64_t(selected * 1000);
+        return available;
+    }
+};
 static std::atomic<bool> g_lyricsEnabled{true}, g_lyricsOnline{true};
 static std::atomic<int> g_lyricsOffsetMs{0};
 static int g_lyricsWidth = 260;
@@ -5887,6 +6022,7 @@ static DWORD WINAPI LyricsThreadProc(void*) {
     std::vector<LyricLine> lines;
     // Bounded successful-result cache; misses retry after 30 seconds.
     PlayerTimelineSmoother smoother;
+    NeteaseNativeClock neteaseClock;
     std::list<std::pair<std::wstring, std::vector<LyricLine>>> cache;
     while (!g_unloading && WaitForSingleObject(g_lyricsStop, 200) == WAIT_TIMEOUT) {
         try {
@@ -5894,6 +6030,7 @@ static DWORD WINAPI LyricsThreadProc(void*) {
             { std::lock_guard<std::mutex> lock(g_sessionMtx); session = g_currentSession; }
             std::wstring title, artist, app, folder, key, display;
             LyricFrame frame;
+            bool needsNativeClock = false, hasNativeClock = false;
             if (session && g_lyricsEnabled) {
                 auto readProps = [&]() {
                     auto op = session.TryGetMediaPropertiesAsync();
@@ -5945,6 +6082,8 @@ static DWORD WINAPI LyricsThreadProc(void*) {
                     // Re-read the timeline after the fetch; downloading may take seconds.
                     timeline = session.GetTimelineProperties();
                 }
+                needsNativeClock = source == PlayerSource::Netease &&
+                    timeline.LastUpdatedTime().time_since_epoch().count() == 0 && duration <= 0;
                 if (!lines.empty()) {
                     auto rawPosition = (timeline.Position() - timeline.StartTime()).count() / 10000;
                     auto info = session.GetPlaybackInfo();
@@ -5955,6 +6094,10 @@ static DWORD WINAPI LyricsThreadProc(void*) {
                     int64_t position = (int64_t)smoother.Select(source, app+L"\n"+title+L"\n"+artist,
                         rawPosition, timeline.LastUpdatedTime().time_since_epoch().count()/10000,
                         winrt::clock::now().time_since_epoch().count()/10000, sampledAt, playing, playbackRate);
+                    if (needsNativeClock) {
+                        hasNativeClock = neteaseClock.Sample(playing, playbackRate, position);
+                        sampledAt = GetTickCount64();
+                    }
                     position = std::max<int64_t>(position,0);
                     if (duration > 0) position = std::min<int64_t>(position,(int64_t)(duration*1000));
                     position += g_lyricsOffsetMs.load() + GetSourceConfig(source).offsetMs;
@@ -5969,6 +6112,7 @@ static DWORD WINAPI LyricsThreadProc(void*) {
                     frame.position = position;
                     frame.rate = playing ? playbackRate : 0;
                     frame.sampledAt = sampledAt;
+                    if (needsNativeClock && !hasNativeClock) { display.clear(); frame.next.clear(); frame.words.clear(); }
                 }
                 // Drop results if the selected media session changed while we were waiting.
                 { std::lock_guard<std::mutex> lock(g_sessionMtx); if (session != g_currentSession) continue; }
@@ -5980,7 +6124,7 @@ static DWORD WINAPI LyricsThreadProc(void*) {
                 g_lyricTitle = title; g_lyricArtist = artist; g_lyricApp = app; g_lyricText = display;
                 frame.title = title; frame.artist = artist; frame.app = app;
                 frame.text = display.empty() ? (title.empty() ? L"暂无播放" : (lines.empty() ? L"暂未找到歌词" : L"♪")) : display;
-                frame.hasLyrics = !lines.empty();
+                frame.hasLyrics = !lines.empty() && (!needsNativeClock || hasNativeClock);
                 g_lyricFrame = std::move(frame);
             }
             if (changed) g_needsUiUpdate = true;

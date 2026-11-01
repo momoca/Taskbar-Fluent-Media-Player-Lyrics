@@ -4,7 +4,9 @@
 
 一个用于 Windows 11 的 [Windhawk](https://windhawk.net/) 模组，将 Fluent 风格播放器、同步歌词和音频频谱直接放在任务栏上。本项目基于 [Salyts/Taskbar-Fluent-Media-Player](https://github.com/Salyts/Taskbar-Fluent-Media-Player)，增加真实逐字歌词，以及在每块显示器任务栏上显示完整播放器的能力。
 
-当前源码版本：**`1.6.0-full-mirror-v3-lyrics6`**。另见[完整功能列表](功能列表与播放器支持.md)与[技术说明](LYRICS.md)。
+当前源码版本：**`1.6.0-full-mirror-v3-lyrics7`**。另见[完整功能列表](功能列表与播放器支持.md)与[技术说明](LYRICS.md)。
+
+lyrics7：网易云原生 SMTC 缺少时间轴时，使用只读客户端播放时钟同步歌词。已验证网易云 3.1.41.205564 x64；无法识别或进度失效时隐藏歌词，其他版本可能需要适配。详见 [技术说明](LYRICS.md)。
 
 ## 1. 功能
 
