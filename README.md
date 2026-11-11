@@ -8,6 +8,8 @@ Current source version: **`2.0`**. See the [complete feature list](Features-and-
 
 lyrics7: When native NetEase SMTC omits its timeline, lyrics use a validated, read-only client playback clock. Tested with NetEase 3.1.41.205564 x64. Unavailable clocks hide lyrics; other client versions may require adaptation. See [technical notes](LYRICS.md).
 
+![Taskbar media player with album art, an audio visualizer, and synchronized lyrics](assets/taskbar-preview.png)
+
 ## 1. Features
 
 | Area | What is included |

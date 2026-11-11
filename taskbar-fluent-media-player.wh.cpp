@@ -18,6 +18,8 @@
 /*
 # Taskbar Fluent Media Player Lyrics
 
+![Taskbar media player with synchronized lyrics](https://raw.githubusercontent.com/momoca/Taskbar-Fluent-Media-Player-Lyrics/main/assets/taskbar-preview.png)
+
 A fork of **[Taskbar Fluent Media Player](https://github.com/Salyts/Taskbar-Fluent-Media-Player)** by Salyts, maintained by [momoca](https://github.com/momoca).
 Version 2.0 adds a dedicated two-line lyrics area and full-player mirroring across monitors.
 
