@@ -1,12 +1,14 @@
 // ==WindhawkMod==
-// @id              taskbar-fluent-media-player
+// @id              taskbar-fluent-media-player-lyrics
 // @name            Taskbar Fluent Media Player Lyrics
-// @description     A Windows 11 taskbar media player with genuine word-timed lyrics and full-player mirroring across monitors.
-// @description:ru-RU Медиаплеер для панели задач Windows 11 с реальными временными метками слов и полным плеером на каждом мониторе.
-// @version         1.6.0-full-mirror-v3-lyrics7
-// @author          Salyts, momoca
+// @description     A fork of Taskbar Fluent Media Player with synchronized lyrics and a full player on every monitor's taskbar.
+// @description:zh-CN Taskbar Fluent Media Player 的分支，支持同步歌词和多显示器任务栏播放器。
+// @description:ru-RU Форк Taskbar Fluent Media Player с синхронизированными текстами песен и полным плеером на каждом мониторе.
+// @version         2.0
+// @author          momoca
 // @github          https://github.com/momoca
-// @description:zh-CN Windows 11 任务栏播放器，支持真实逐字歌词和所有显示器上的完整播放器镜像。
+// @homepage        https://github.com/momoca/Taskbar-Fluent-Media-Player-Lyrics
+// @license         MIT
 // @include         explorer.exe
 // @compilerOptions -lole32 -loleaut32 -lruntimeobject -luuid -luser32 -lwindowsapp -lshell32 -lgdi32 -lshlwapi -lwindowscodecs -ldwmapi -lshcore -lksuser -lwinhttp -lbcrypt
 // ==/WindhawkMod==
@@ -16,8 +18,8 @@
 /*
 # Taskbar Fluent Media Player Lyrics
 
-Fork of Salyts/Taskbar-Fluent-Media-Player, maintained by momoca.
-Source version: 1.6.0-full-mirror-v3-lyrics7.
+A fork of **[Taskbar Fluent Media Player](https://github.com/Salyts/Taskbar-Fluent-Media-Player)** by Salyts, maintained by [momoca](https://github.com/momoca).
+Version 2.0 adds a dedicated two-line lyrics area and full-player mirroring across monitors.
 
 [English](https://github.com/momoca/Taskbar-Fluent-Media-Player-Lyrics/blob/main/README.md) | [简体中文](https://github.com/momoca/Taskbar-Fluent-Media-Player-Lyrics/blob/main/README_CN.md) | [Русский](https://github.com/momoca/Taskbar-Fluent-Media-Player-Lyrics/blob/main/README_RU.md)
 
@@ -54,7 +56,7 @@ table for tested and conditional integrations.
 
 Use this repository's source to install or update a local Windhawk mod; the
 upstream gallery entry does not install this fork. Enable only one copy of
-this taskbar player. The original mod ID is retained for compatibility.
+this taskbar player. Upgrading from an earlier local build with the original ID requires copying or reapplying its settings to the new mod ID.
 
 Online lookup sends song metadata or service track IDs to lyrics providers.
 No player account or user login cookie is read. Disable online retrieval for
@@ -65,11 +67,35 @@ local-only operation. Successful lyrics are cached only in memory.
 Original player: Salyts; original visualization: GR0UD. Fork additions: momoca.
 Lyrics architecture and QQ reference: ANYNC/TaskbarLyrics. NetEase protocol
 reference: Lyricify Lyrics Helper. Embedded DEFLATE: Mark Adler's puff.
-Upstream MIT and embedded third-party notices are preserved.
+The upstream MIT license and embedded third-party notices are included in the source.
 
 [Report fork issues](https://github.com/momoca/Taskbar-Fluent-Media-Player-Lyrics/issues)
 */
 // ==/WindhawkModReadme==
+
+/*
+MIT License
+
+Copyright (c) 2026 Salyts
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
 
 
 // ==WindhawkModSettings==
@@ -2277,7 +2303,7 @@ static void AnimateSessionPill(winrt::Windows::UI::Xaml::Shapes::Rectangle const
 static winrt::Windows::UI::Xaml::Controls::Button BuildSessionRowButton(const MiniSessionInfo& info, bool isCurrent, HWND taskbarWnd, int rowIndex);
 
 
-static void ApplySettings();
+static void TryMountPlayerOnTaskbar();
 static std::atomic<bool> g_unloading{false};
 static std::atomic<bool> g_applyingSettings{false};
 static HWND g_taskbarWnd = nullptr;
@@ -3575,7 +3601,7 @@ static void ExecuteMediaAction(const std::wstring& action, FrameworkElement cons
     } else if (action == L"toggle_repeat") {
         SendMediaCommandAsync(8);
         DispatchMediaUpdate();
-} else if (action == L"open_app") {
+    } else if (action == L"open_app") {
         SpawnTrackedWorker([]() {
             std::wstring title, appAumid;
             {
@@ -3607,11 +3633,23 @@ static void ExecuteMediaAction(const std::wstring& action, FrameworkElement cons
             search.targetAumid = appAumid;
             std::transform(search.targetAumid.begin(), search.targetAumid.end(), search.targetAumid.begin(), ::towlower);
             EnumWindows([](HWND hwnd, LPARAM lParam) CALLBACK -> BOOL {
-                if (!IsWindowVisible(hwnd)) return TRUE;
+                const bool visible = IsWindowVisible(hwnd);
+                // Tray-minimized players can hide their main window while
+                // retaining the minimized state. Restore it if its app matches.
+                if (!visible && !IsIconic(hwnd)) return TRUE;
                 WINDOWINFO wi{};
                 wi.cbSize = sizeof(wi);
-                GetWindowInfo(hwnd, &wi);
-                if ((wi.dwStyle & WS_CHILD) != 0) return TRUE;
+                if (!GetWindowInfo(hwnd, &wi) ||
+                    (wi.dwStyle & WS_CHILD) ||
+                    (wi.dwExStyle & (WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE)) ||
+                    (GetWindow(hwnd, GW_OWNER) && !(wi.dwExStyle & WS_EX_APPWINDOW))) {
+                    return TRUE;
+                }
+                DWORD cloaked = 0;
+                if (SUCCEEDED(DwmGetWindowAttribute(hwnd, DWMWA_CLOAKED, &cloaked, sizeof(cloaked))) &&
+                    cloaked) {
+                    return TRUE;
+                }
                 auto* s = reinterpret_cast<WindowSearch*>(lParam);
                 if (!s->aumidHwnd && !s->targetAumid.empty()) {
                     IPropertyStore* pps = nullptr;
@@ -3657,7 +3695,7 @@ static void ExecuteMediaAction(const std::wstring& action, FrameworkElement cons
                         }
                     }
                 }
-                if (!s->titleHwnd && !s->targetTitle.empty()) {
+                if (visible && !s->titleHwnd && !s->targetTitle.empty()) {
                     wchar_t windowTitle[512];
                     if (GetWindowTextW(hwnd, windowTitle, 512) > 0) {
                         std::wstring wTitle(windowTitle);
@@ -3672,11 +3710,12 @@ static void ExecuteMediaAction(const std::wstring& action, FrameworkElement cons
             HWND targetWindow = search.aumidHwnd
                 ? search.aumidHwnd
                 : (search.processHwnd ? search.processHwnd : search.titleHwnd);
-            if (targetWindow) {
+            if (g_unloading) return;
+            if (targetWindow && IsWindow(targetWindow)) {
                 if (IsIconic(targetWindow)) {
                     ShowWindow(targetWindow, SW_RESTORE);
                 }
-                
+
                 HWND hCurWnd = GetForegroundWindow();
                 if (hCurWnd && hCurWnd != targetWindow) {
                     DWORD dwMyID = GetCurrentThreadId();
@@ -6380,6 +6419,8 @@ static DWORD WINAPI TimerThreadProc(void*) {
     if (RegOpenKeyExW(HKEY_CURRENT_USER, L"Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", 0, KEY_NOTIFY, &hKey) == ERROR_SUCCESS) {
         RegNotifyChangeKeyValue(hKey, FALSE, REG_NOTIFY_CHANGE_LAST_SET, hEvent, TRUE);
     }
+    constexpr ULONGLONG kMountCheckIntervalMs = 4000;
+    ULONGLONG nextMountCheck = GetTickCount64() + kMountCheckIntervalMs;
     while (!g_unloading) {
         HANDLE handles[] = {g_timerStopEvent, hEvent, g_timerUpdateEvent};
         DWORD wait = WaitForMultipleObjects(3, handles, FALSE, 500);
@@ -6445,15 +6486,28 @@ static DWORD WINAPI TimerThreadProc(void*) {
                 needsUpdate    = true;
             }
         }
+        const ULONGLONG now = GetTickCount64();
+        const bool checkMount = now >= nextMountCheck;
+        if (checkMount) {
+            nextMountCheck = now + kMountCheckIntervalMs;
+        }
         // Secondary UI is refreshed by its primary-dispatcher timer.
-        if (needsUpdate) {
-            RunFromWindowThread(hWnd, [](void*) {
-                if (g_unloading || g_applyingSettings) return;
-                if (g_playerGrid) {
+        if (needsUpdate || checkMount) {
+            struct TaskbarUpdate {
+                HWND hwnd;
+                bool refresh;
+                bool checkMount;
+            } update{hWnd, needsUpdate, checkMount};
+            RunFromWindowThread(hWnd, [](void* param) {
+                const auto& update = *static_cast<TaskbarUpdate*>(param);
+                if (g_unloading || g_applyingSettings || g_taskbarWnd != update.hwnd) return;
+                if (!g_playerGrid && update.checkMount) {
+                    TryMountPlayerOnTaskbar();
+                } else if (g_playerGrid && update.refresh) {
                     RefreshPlayerContents();
                     UpdateVisibility();
                 }
-            }, nullptr);
+            }, &update);
         }
     }
     if (hKey) RegCloseKey(hKey);
@@ -11163,6 +11217,7 @@ static bool InjectPlayerGrid() {
         }
         auto [targetGrid, insertCol] = ResolveInjectionTarget(root, g_settings.position);
         if (!targetGrid) {
+            Wh_Log(L"InjectPlayerGrid: No target grid for position %s", g_settings.position.c_str());
             if (g_settings.enableTreeDump) {
                 DumpXamlTree(root, 0, 8);
             }
@@ -13944,50 +13999,24 @@ static void RemoveAllSecondaryMediaViews() {
 }
 // === End full-style per-monitor media player mirrors ===
 
-static void ApplySettings() {
-    g_idleSeconds  = 0;
-    g_idleTicks    = 0;
-    g_hiddenByIdle = false;
-    try { RemovePlayerGrid(); } catch (...) { Wh_Log(L"ApplySettings: Exception in RemovePlayerGrid"); }
-    if (!g_unloading) {
-        try { InjectPlayerGrid(); } catch (...) { Wh_Log(L"ApplySettings: Exception in InjectPlayerGrid"); }
-    }
-}
-static void ApplySettingsWithRetry(FrameworkElement xamlRootContent, int retryCount = 0) {
-    static constexpr int kMaxRetries = 50;
-    auto retry = [&]() {
-        if (retryCount >= kMaxRetries) {
-            Wh_Log(L"ApplySettingsWithRetry: giving up after %d retries, SystemTray.SystemTrayFrame not found", kMaxRetries);
-            return;
+static void TryMountPlayerOnTaskbar() {
+    if (g_unloading || g_applyingSettings || g_playerGrid) return;
+
+    // Let the requested position choose its own XAML host. Taskbar positions
+    // can be ready before the system tray, and a failed mount is retried by
+    // TimerThreadProc once the taskbar window and its XAML tree are available.
+    try {
+        if (InjectPlayerGrid()) {
+            ShowSuccessNotification();
+            UpdateVisibility();
+            g_needsUiUpdate = true;
+            if (g_timerUpdateEvent) SetEvent(g_timerUpdateEvent);
         }
-        auto timer = DispatcherTimer();
-        timer.Interval(winrt::Windows::Foundation::TimeSpan{
-            std::chrono::milliseconds(100)});
-        auto tickToken = std::make_shared<winrt::event_token>();
-        *tickToken = timer.Tick(
-            [timer, tickToken, xamlRootContent, retryCount](
-                winrt::Windows::Foundation::IInspectable const&,
-                winrt::Windows::Foundation::IInspectable const&) {
-                timer.Stop();
-                timer.Tick(*tickToken);
-                ApplySettingsWithRetry(xamlRootContent, retryCount + 1);
-            });
-        timer.Start();
-    };
-    if (g_unloading) {
-        return;
+        StartMirrorDiscoveryTimerOnPrimaryThread();
+        UpdateSecondaryMediaViews();
+    } catch (...) {
+        Wh_Log(L"TryMountPlayerOnTaskbar: Exception while initializing the taskbar UI");
     }
-    auto systemTrayFrame = FindChildByClassName(xamlRootContent, L"SystemTray.SystemTrayFrame");
-    if (!systemTrayFrame) {
-        retry();
-        return;
-    }
-    auto systemTrayFrameGrid = FindChildByName(systemTrayFrame, L"SystemTrayFrameGrid");
-    if (!systemTrayFrameGrid) {
-        retry();
-        return;
-    }
-    ApplySettings();
 }
 using TrayUI_StartTaskbar_t = void(WINAPI*)(void*);
 static TrayUI_StartTaskbar_t TrayUI_StartTaskbar_Original = nullptr;
@@ -14031,20 +14060,8 @@ static void WINAPI TrayUI_StartTaskbar_Hook(void* pThis) {
     if (g_settings.enableTitleScrolling || g_settings.enableArtistScrolling) {
         StartScrollTimer();
     }
-    auto xamlRoot = GetTaskbarXamlRoot(hWnd);
-    if (!xamlRoot) {
-        Wh_Log(L"InjectPlayerGrid: Failed to get XAML root");
-        return;
-    }
-    auto xamlRootContent = xamlRoot.Content().try_as<FrameworkElement>();
-    if (!xamlRootContent) {
-        Wh_Log(L"InjectPlayerGrid: Failed to get XAML root content");
-        return;
-    }
-    ApplySettingsWithRetry(xamlRootContent);
     RunFromWindowThread(hWnd, [](void*) {
-        StartMirrorDiscoveryTimerOnPrimaryThread();
-        UpdateSecondaryMediaViews();
+        TryMountPlayerOnTaskbar();
     }, nullptr);
 }
 static bool HookTaskbarDllSymbols() {
@@ -14074,7 +14091,14 @@ static bool HookTaskbarDllSymbols() {
         &TrayUI_StartTaskbar_Original,
         TrayUI_StartTaskbar_Hook},
     };
-    if (!WindhawkUtils::HookSymbols(h, taskbarDllHooks, ARRAYSIZE(taskbarDllHooks))) {
+    // Windhawk skips the default online cache for local mods. Use the upstream
+    // player's cache, which covers these same symbols and can serve builds
+    // whose Taskbar.pdb has not been published by Microsoft.
+    const WH_HOOK_SYMBOLS_OPTIONS options{
+        .optionsSize = sizeof(options),
+        .onlineCacheUrl = L"https://ramensoftware.github.io/windhawk-mod-symbol-cache/taskbar-fluent-media-player/",
+    };
+    if (!WindhawkUtils::HookSymbols(h, taskbarDllHooks, ARRAYSIZE(taskbarDllHooks), &options)) {
         return FALSE;
     }
     return TRUE;
@@ -14095,26 +14119,9 @@ void Wh_ModAfterInit() {
     g_taskbarWnd = FindCurrentProcessTaskbarWnd();
     StartMediaThread();
     StartTimerThread();
-    if (g_taskbarWnd) {
-        RunFromWindowThread(g_taskbarWnd, [](void*) {
-            g_cachedAlbumTitle.clear();
-            g_cachedAlbumArtist.clear();
-            g_cachedThumbnailBytes.clear();
-            g_cachedPaletteHash = 0;
-            g_cachedAppIconSize = -1;
-            g_blurBgCache.Invalidate();
-            ApplySettings();
-            StartMirrorDiscoveryTimerOnPrimaryThread();
-            UpdateSecondaryMediaViews();
-            if (g_playerGrid) {
-                ShowSuccessNotification();
-                RefreshPlayerContents();
-                UpdateVisibility();
-                g_needsUiUpdate = true;
-                if (g_timerUpdateEvent) {
-                    SetEvent(g_timerUpdateEvent);
-                }
-            }
+    if (HWND hWnd = g_taskbarWnd) {
+        RunFromWindowThread(hWnd, [](void*) {
+            TryMountPlayerOnTaskbar();
         }, nullptr);
     }
 }
