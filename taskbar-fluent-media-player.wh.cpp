@@ -6498,14 +6498,19 @@ static DWORD WINAPI TimerThreadProc(void*) {
             struct TaskbarUpdate {
                 HWND hwnd;
                 bool refresh;
-                bool checkMount;
-            } update{hWnd, needsUpdate, checkMount};
+            } update{hWnd, needsUpdate};
             RunFromWindowThread(hWnd, [](void* param) {
                 const auto& update = *static_cast<TaskbarUpdate*>(param);
                 if (g_unloading || g_applyingSettings || g_taskbarWnd != update.hwnd) return;
-                if (!g_playerGrid && update.checkMount) {
+                // Explorer can replace the XAML tree while the old grid is still referenced.
+                if (g_playerGrid && !g_playerGrid.XamlRoot()) {
+                    Wh_Log(L"Primary taskbar player detached from XAML; remounting on %p", update.hwnd);
+                    RemovePlayerGrid();
+                }
+                if (!g_playerGrid) {
                     TryMountPlayerOnTaskbar();
-                } else if (g_playerGrid && update.refresh) {
+                }
+                if (g_playerGrid && update.refresh) {
                     RefreshPlayerContents();
                     UpdateVisibility();
                 }
@@ -12414,16 +12419,19 @@ static void UpdateVisibility() {
                                     g_settings.position == L"taskbar_far_edge_left");
             if (hide && isTrackingPosition && g_settings.enableSmoothPositionAnimation) {
                 g_playerGrid.Opacity(0.0);
-                SpawnTrackedWorker([]() {
+                SpawnTrackedWorker([player = winrt::make_weak(g_playerGrid)]() mutable {
                     std::this_thread::sleep_for(std::chrono::milliseconds(200));
                     try {
                         RunFromWindowThread(g_taskbarWnd, [](void* param) {
                             try {
-                                if (g_playerGrid) {
+                                // Playback can make the player visible during the hide animation.
+                                const auto player = static_cast<winrt::weak_ref<Grid>*>(param)->get();
+                                if (!g_unloading && !g_applyingSettings && player &&
+                                    player == g_playerGrid && player.Opacity() == 0.0) {
                                     g_playerGrid.Visibility(Visibility::Collapsed);
                                     if (g_injectionParent) {
                                         if (auto targetGrid = g_injectionParent.try_as<Grid>()) {
-                                            if (g_playerColumn < (int)targetGrid.ColumnDefinitions().Size()) {
+                                            if (g_playerColumn >= 0 && g_playerColumn < (int)targetGrid.ColumnDefinitions().Size()) {
                                                 auto colDef = targetGrid.ColumnDefinitions().GetAt(g_playerColumn);
                                                 colDef.Width({0.0, GridUnitType::Pixel});
                                             }
@@ -12434,7 +12442,7 @@ static void UpdateVisibility() {
                                     g_playerGrid.Width(0);
                                 }
                             } catch (...) {}
-                        }, nullptr);
+                        }, &player);
                     } catch (...) {}
                 });
             } else {
