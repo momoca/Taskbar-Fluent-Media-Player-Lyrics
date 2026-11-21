@@ -2423,16 +2423,18 @@ static bool RunFromWindowThread(HWND hWnd, WindowThreadProc proc, void* param) {
     UnhookWindowsHookEx(hook);
     return true;
 }
+using MediaBytes = std::shared_ptr<const std::vector<BYTE>>;
+static const auto kEmptyMediaBytes = std::make_shared<const std::vector<BYTE>>();
 struct MediaState {
     std::wstring      title;
     std::wstring      artist;
     std::wstring      appUserModelId;
     bool              isPlaying     = false;
     bool              hasMedia      = false;
-    std::vector<BYTE> thumbnailBytes;
+    MediaBytes thumbnailBytes = kEmptyMediaBytes;
     uint64_t          thumbnailHash = 0;
     uint64_t          thumbnailStreamSize = 0;
-    std::vector<BYTE> appIconBytes;
+    MediaBytes appIconBytes = kEmptyMediaBytes;
     std::wstring      appIconKey;
     bool              canSkipPrevious  = true;
     bool              canSkipNext      = true;
@@ -2441,6 +2443,7 @@ struct MediaState {
     bool              canSeek          = true;
 };
 static MediaState g_media;
+static std::atomic<uint64_t> g_lyricsMetadataRevision{1};
 static std::mutex g_mediaMtx;
 static std::wstring g_lastTitleArtistKey;
 static uint64_t     g_suspectArtSize   = 0;
@@ -3283,7 +3286,20 @@ static constexpr wchar_t kSwitchSessionsBtnName[] = L"FluentMedia_SwitchSessions
 static int  g_idleSeconds  = 0;
 static int  g_idleTicks    = 0;
 static std::atomic<bool> g_hiddenByIdle{false};
-static std::chrono::steady_clock::time_point g_lastMediaTime = std::chrono::steady_clock::now();
+// Each UI thread owns its deadline. Zero means no empty-session grace period is pending.
+static ULONGLONG g_primaryNoMediaDeadline = 0;
+static bool HideForNoMedia(ULONGLONG& deadline) {
+    bool hasMedia, hasSession;
+    { std::lock_guard<std::mutex> lock(g_mediaMtx); hasMedia = g_media.hasMedia; }
+    { std::lock_guard<std::mutex> lock(g_sessionMtx); hasSession = g_currentSession != nullptr; }
+    if (!g_settings.hideWhenNoMedia || !hasSession || hasMedia) {
+        deadline = 0;
+        return g_settings.hideWhenNoMedia && !hasSession;
+    }
+    const auto now = GetTickCount64();
+    if (!deadline) deadline = now + 2500;
+    return now >= deadline;
+}
 static void SwitchMediaSession();
 static void SendMediaCommandAsync(int cmd) {
     SpawnTrackedWorker([cmd]() {
@@ -4182,7 +4198,7 @@ static void FetchMediaPropertiesAsync() {
                         thumbStreamSize = 0;
                     }
                 }
-                std::vector<BYTE> appIconBytes;
+                MediaBytes appIconBytes;
                 std::wstring      appIconKey;
                 bool forceIconRefresh = false;
                 {
@@ -4194,9 +4210,9 @@ static void FetchMediaPropertiesAsync() {
                     std::lock_guard<std::mutex> lk(g_sessionMtx);
                     forceIconRefresh = g_userSwitchedSession;
                 }
-                if (g_settings.showAppIcon && (aumid != appIconKey || appIconBytes.empty() || forceIconRefresh || g_cachedAppIconSize != g_settings.appIconSize)) {
+                if (g_settings.showAppIcon && (aumid != appIconKey || appIconBytes->empty() || forceIconRefresh || g_cachedAppIconSize != g_settings.appIconSize)) {
                     try {
-                        appIconBytes = FetchAppIconBytes(aumid, g_settings.appIconSize);
+                        appIconBytes = std::make_shared<const std::vector<BYTE>>(FetchAppIconBytes(aumid, g_settings.appIconSize));
                         appIconKey   = aumid;
                         g_cachedAppIconSize = g_settings.appIconSize;
                     } catch (...) {
@@ -4208,7 +4224,7 @@ static void FetchMediaPropertiesAsync() {
                         g_media.title          = std::wstring(props.Title());
                         g_media.artist         = std::wstring(props.Artist());
                         g_media.hasMedia       = !g_media.title.empty() || !g_media.artist.empty();
-                        g_media.thumbnailBytes = std::move(thumbBytes);
+                        g_media.thumbnailBytes = std::make_shared<const std::vector<BYTE>>(std::move(thumbBytes));
                         g_media.thumbnailHash  = thumbHash;
                         g_media.thumbnailStreamSize = thumbStreamSize;
                         g_media.appUserModelId = aumid;
@@ -4434,8 +4450,8 @@ static void AttachToSession(GlobalSystemMediaTransportControlsSession session) {
         {
             std::lock_guard<std::mutex> lk(g_mediaMtx);
             g_media.appIconKey   = L"";
-            g_media.appIconBytes.clear();
-            g_media.thumbnailBytes.clear();
+            g_media.appIconBytes = kEmptyMediaBytes;
+            g_media.thumbnailBytes = kEmptyMediaBytes;
             g_media.thumbnailHash = 0;
             g_media.thumbnailStreamSize = 0;
             g_lastTitleArtistKey.clear();
@@ -4453,6 +4469,7 @@ static void AttachToSession(GlobalSystemMediaTransportControlsSession session) {
         g_currentSession = session;
         try {
             g_evMediaProps = g_currentSession.MediaPropertiesChanged([](auto const&, auto const&) {
+                ++g_lyricsMetadataRevision;
                 if (!g_unloading) FetchMediaPropertiesAsync();
             });
             g_evPlayback = g_currentSession.PlaybackInfoChanged([](auto const&, auto const&) {
@@ -5530,7 +5547,7 @@ struct LyricFrame {
     uint64_t sampledAt = 0;
     bool hasLyrics = false;
 };
-static LyricFrame g_lyricFrame; // Protected by g_lyricsMtx.
+static std::shared_ptr<const LyricFrame> g_lyricFrame; // Protected by g_lyricsMtx.
 static double LyricHighlightWidth(const std::vector<LyricWord>& words, double position, const std::vector<double>& widths) {
     double result = 0;
     for (const auto& word : words) {
@@ -6064,6 +6081,10 @@ static DWORD WINAPI LyricsThreadProc(void*) {
     // Bounded successful-result cache; misses retry after 30 seconds.
     PlayerTimelineSmoother smoother;
     NeteaseNativeClock neteaseClock;
+    GlobalSystemMediaTransportControlsSession metadataSession{nullptr};
+    uint64_t metadataRevision = 0, nextMetadataCheck = 0;
+    std::wstring trackTitle, trackArtist, album, lookupArtist, songId, trackApp;
+    PlayerSource source{};
     std::list<std::pair<std::wstring, std::vector<LyricLine>>> cache;
     while (!g_unloading && WaitForSingleObject(g_lyricsStop, 200) == WAIT_TIMEOUT) {
         try {
@@ -6084,18 +6105,28 @@ static DWORD WINAPI LyricsThreadProc(void*) {
                     }
                     return op.GetResults();
                 };
-                auto props = readProps();
-                title = props.Title(); artist = props.Artist(); app = session.SourceAppUserModelId();
-                PlayerSource source = ClassifyPlayerSource(app);
-                std::wstring lookupArtist = artist.empty() ? std::wstring(props.AlbumArtist()) : artist;
-                std::vector<std::wstring> genres;
-                for (auto const& genre : props.Genres()) genres.emplace_back(genre);
-                std::wstring songId = ExtractPlayerSongId(source, genres);
+                const auto revision = g_lyricsMetadataRevision.load();
+                if (session != metadataSession || revision != metadataRevision || GetTickCount64() >= nextMetadataCheck) {
+                    auto props = readProps();
+                    trackTitle = props.Title();
+                    trackArtist = props.Artist();
+                    album = props.AlbumTitle();
+                    trackApp = session.SourceAppUserModelId();
+                    source = ClassifyPlayerSource(trackApp);
+                    lookupArtist = trackArtist.empty() ? std::wstring(props.AlbumArtist()) : trackArtist;
+                    std::vector<std::wstring> genres;
+                    for (auto const& genre : props.Genres()) genres.emplace_back(genre);
+                    songId = ExtractPlayerSongId(source, genres);
+                    metadataSession = session;
+                    metadataRevision = revision;
+                    nextMetadataCheck = GetTickCount64() + 5000;
+                }
+                title = trackTitle; artist = trackArtist; app = trackApp;
                 auto timeline = session.GetTimelineProperties();
                 double duration = (timeline.EndTime() - timeline.StartTime()).count() / 10000000.0;
                 bool online = g_lyricsOnline;
                 { std::lock_guard<std::mutex> lock(g_lyricsMtx); folder = g_lyricsFolder; }
-                key = app + L"\n" + title + L"\n" + artist + L"\n" + std::wstring(props.AlbumTitle())
+                key = app + L"\n" + title + L"\n" + artist + L"\n" + album
                     + L"\n" + folder + (online ? L"\n1" : L"\n0") + L"\n" + std::to_wstring((int)duration)
                     + L"\n" + lookupArtist + L"\n" + songId;
                 if (key != identity || (lines.empty() && GetTickCount64() >= retryAt)) {
@@ -6104,19 +6135,20 @@ static DWORD WINAPI LyricsThreadProc(void*) {
                     {
                         std::lock_guard<std::mutex> lock(g_lyricsMtx);
                         g_lyricText.clear();
-                        g_lyricFrame = {title, artist, app, L"正在获取歌词…"};
+                        g_lyricFrame.reset();
                     }
-                    g_needsUiUpdate = true;
+
                     auto hit = std::find_if(cache.begin(), cache.end(), [&](auto& entry) { return entry.first == key; });
                     if (hit != cache.end()) lines = hit->second;
                     else if (!title.empty()) {
-                        lines = ResolveLyrics(folder, online, title, lookupArtist, std::wstring(props.AlbumTitle()), duration, source, songId);
+                        lines = ResolveLyrics(folder, online, title, lookupArtist, album, duration, source, songId);
                         if (!lines.empty()) cache.emplace_front(key, lines);
                         if (cache.size() > 64) cache.pop_back();
                     }
                     retryAt = GetTickCount64() + 30000;
                     auto latest = readProps();
-                    if (latest.Title() != props.Title() || latest.Artist() != props.Artist()) {
+                    if (std::wstring(latest.Title()) != title || std::wstring(latest.Artist()) != artist) {
+                        nextMetadataCheck = 0;
                         identity.clear();
                         continue;
                     }
@@ -6157,21 +6189,21 @@ static DWORD WINAPI LyricsThreadProc(void*) {
                 }
                 // Drop results if the selected media session changed while we were waiting.
                 { std::lock_guard<std::mutex> lock(g_sessionMtx); if (session != g_currentSession) continue; }
-            } else { identity.clear(); lines.clear(); smoother = {}; }
-            bool changed;
+            } else { metadataSession = nullptr; identity.clear(); lines.clear(); smoother = {}; }
+
             {
                 std::lock_guard<std::mutex> lock(g_lyricsMtx);
-                changed = g_lyricText != display || g_lyricTitle != title || g_lyricArtist != artist || g_lyricApp != app;
+
                 g_lyricTitle = title; g_lyricArtist = artist; g_lyricApp = app; g_lyricText = display;
                 frame.title = title; frame.artist = artist; frame.app = app;
                 frame.text = display.empty() ? (title.empty() ? L"暂无播放" : (lines.empty() ? L"暂未找到歌词" : L"♪")) : display;
                 frame.hasLyrics = !lines.empty() && (!needsNativeClock || hasNativeClock);
-                g_lyricFrame = std::move(frame);
+                g_lyricFrame = frame.hasLyrics ? std::make_shared<const LyricFrame>(std::move(frame)) : nullptr;
             }
-            if (changed) g_needsUiUpdate = true;
+
         } catch (...) {
             { std::lock_guard<std::mutex> lock(g_lyricsMtx); g_lyricText.clear(); g_lyricFrame = {}; }
-            g_needsUiUpdate = true;
+
         }
     }
     winrt::uninit_apartment();
@@ -6385,7 +6417,9 @@ static void UpdateScrollTransforms() {
         } catch (...) {}
     }
 }
+static std::atomic<uint64_t> g_mediaRevision{1};
 static void DispatchMediaUpdate() {
+    ++g_mediaRevision;
     bool unloading = g_unloading;
     bool applyingSettings = g_applyingSettings;
     if (unloading || applyingSettings) {
@@ -6513,6 +6547,9 @@ static DWORD WINAPI TimerThreadProc(void*) {
                 }
                 if (g_playerGrid && update.refresh) {
                     RefreshPlayerContents();
+                    UpdateVisibility();
+                } else if (g_playerGrid && g_primaryNoMediaDeadline && GetTickCount64() >= g_primaryNoMediaDeadline &&
+                           g_playerGrid.Visibility() == Visibility::Visible && !g_miniPlayerFlyoutOpen) {
                     UpdateVisibility();
                 }
                 if (g_updatePrimaryAnchor) g_updatePrimaryAnchor();
@@ -8077,7 +8114,7 @@ static void RefreshMiniPlayerFlyoutUI() {
         canSkipNext     = g_media.canSkipNext;
         canShuffle      = g_media.canShuffle;
         canRepeat       = g_media.canRepeat;
-        thumbBytes      = g_media.thumbnailBytes;
+        thumbBytes      = *g_media.thumbnailBytes;
     }
     std::wstring currentId;
     {
@@ -8766,7 +8803,7 @@ static Grid BuildMiniPlayerFlyoutContent() {
         canRepeat       = g_media.canRepeat;
         title           = g_media.title;
         artist          = g_media.artist;
-        thumbBytes      = g_media.thumbnailBytes;
+        thumbBytes      = *g_media.thumbnailBytes;
     }
 
 
@@ -9865,18 +9902,25 @@ struct LyricsRegionState {
     double cachedFont = 0;
     uint64_t lineAppearedAt = 0;
     uint32_t cachedColor = 0;
+    bool cachedTimed = false;
+    std::wstring cachedNext;
+    double layoutHeight = -1, layoutWidth = -1, currentHeight = 0;
+    void SetAnimationActive(bool active) {
+        const auto interval = std::chrono::milliseconds(active ? 32 : 200);
+        if (timer && timer.Interval() != interval) timer.Interval(interval);
+    }
     void Render() {
         if (g_unloading || g_applyingSettings) return;
         auto area = canvas.get();
         if (!area) return;
-        LyricFrame frame;
-        { std::lock_guard<std::mutex> lock(g_lyricsMtx); frame = g_lyricFrame; }
-        {
+        std::shared_ptr<const LyricFrame> snapshot;
+        { std::lock_guard<std::mutex> lock(g_lyricsMtx); snapshot = g_lyricFrame; }
+        bool shouldShow = g_lyricsEnabled && snapshot;
+        if (shouldShow) {
             std::lock_guard<std::mutex> lock(g_mediaMtx);
-            if (frame.title != g_media.title || frame.artist != g_media.artist || frame.app != g_media.appUserModelId)
-                frame = {g_media.title, g_media.artist, g_media.appUserModelId, g_media.hasMedia ? L"正在获取歌词…" : L"暂无播放"};
+            shouldShow = snapshot->title == g_media.title && snapshot->artist == g_media.artist &&
+                         snapshot->app == g_media.appUserModelId;
         }
-        const bool shouldShow = g_lyricsEnabled && frame.hasLyrics;
         if (visible != shouldShow) {
             visible = shouldShow;
             column.Width({visible ? (double)g_lyricsWidth + 10 : 0.0, GridUnitType::Pixel});
@@ -9887,7 +9931,8 @@ struct LyricsRegionState {
                 if (wrapper) wrapper.MaxWidth((double)g_settings.playerMaxWidth + (visible ? g_lyricsWidth + 10 : 0));
             }
         }
-        if (!shouldShow) return;
+        if (!shouldShow) { SetAnimationActive(false); return; }
+        const auto& frame = *snapshot;
         RECT rect{};
         double height = 40;
         if (taskbar && GetClientRect(taskbar, &rect)) {
@@ -9898,8 +9943,10 @@ struct LyricsRegionState {
         const double width = g_lyricsWidth, rowHeight = height / 2;
         const double font = std::clamp(rowHeight * .68, 9.0, 24.0);
         if (area.Height() != height) area.Height(height);
-        viewportClip.Rect({0, 0, (float)width, (float)height});
-        bool measure = cachedFont != font || cachedText != frame.text;
+
+        const bool timed = g_lyricsWordHighlight && !frame.words.empty();
+        bool measure = cachedFont != font || cachedText != frame.text || cachedTimed != timed;
+        cachedTimed = timed;
         if (cachedFont != font) {
             current.FontSize(font); highlight.FontSize(font); next.FontSize(font * .92);
             current.LineHeight(font * 1.18); highlight.LineHeight(font * 1.18); next.LineHeight(font * .92 * 1.18);
@@ -9911,18 +9958,29 @@ struct LyricsRegionState {
             cachedColor = argb;
             current.Foreground(MakeBrush(color)); highlight.Foreground(MakeBrush(color)); next.Foreground(MakeBrush(color));
         }
-        bool timed = g_lyricsWordHighlight && !frame.words.empty();
-        current.Opacity(timed ? .45 : 1.0);
-        highlight.Visibility(timed ? Visibility::Visible : Visibility::Collapsed);
-        if (next.Text() != frame.next) next.Text(frame.next);
+
+        if (measure) {
+            current.Opacity(timed ? .45 : 1.0);
+            highlight.Visibility(timed ? Visibility::Visible : Visibility::Collapsed);
+        }
+        bool layoutChanged = measure || cachedNext != frame.next || layoutWidth != width || layoutHeight != height;
+        if (cachedNext != frame.next) {
+            next.Text(frame.next);
+            cachedNext = frame.next;
+        }
         if (measure) {
             if (cachedText != frame.text) lineAppearedAt = GetTickCount64();
             cachedText = frame.text;
             current.Text(frame.text); highlight.Text(frame.text);
             TextBlock ruler;
             ruler.FontFamily(current.FontFamily()); ruler.FontSize(font); ruler.FontWeight(current.FontWeight());
-            widths.assign(frame.text.size() + 1, 0);
-            for (size_t i = 1; i <= frame.text.size(); ++i) {
+            widths.assign(timed ? frame.text.size() + 1 : 1, 0);
+            if (!timed) {
+                ruler.Text(frame.text);
+                ruler.Measure({100000, (float)height});
+                widths.back() = ruler.DesiredSize().Width;
+            }
+            for (size_t i = 1; i < widths.size(); ++i) {
                 if (i < frame.text.size() && frame.text[i-1] >= 0xd800 && frame.text[i-1] <= 0xdbff) continue;
                 ruler.Text(frame.text.substr(0, i));
                 ruler.Measure({100000, (float)height});
@@ -9931,14 +9989,19 @@ struct LyricsRegionState {
         }
         // Center the measured two-line block, rather than placing glyphs at the
         // top of two half-height slots. Keep the baselines compact and stable.
-        current.Measure({100000, (float)height});
-        next.Measure({(float)width, (float)height});
-        double currentHeight = std::max(font * 1.18, (double)current.DesiredSize().Height);
-        double nextHeight = std::max(font * .92 * 1.18, (double)next.DesiredSize().Height);
-        double blockHeight = currentHeight + nextHeight;
-        double top = std::max(0.0, (height - blockHeight) / 2);
-        Canvas::SetTop(current, top); Canvas::SetTop(highlight, top);
-        Canvas::SetTop(next, top + currentHeight);
+        if (layoutChanged) {
+            layoutWidth = width;
+            layoutHeight = height;
+            viewportClip.Rect({0, 0, (float)width, (float)height});
+            current.Measure({100000, (float)height});
+            next.Measure({(float)width, (float)height});
+            currentHeight = std::max(font * 1.18, (double)current.DesiredSize().Height);
+            double nextHeight = std::max(font * .92 * 1.18, (double)next.DesiredSize().Height);
+            double blockHeight = currentHeight + nextHeight;
+            double top = std::max(0.0, (height - blockHeight) / 2);
+            Canvas::SetTop(current, top); Canvas::SetTop(highlight, top);
+            Canvas::SetTop(next, top + currentHeight);
+        }
         double sungWidth = 0;
         if (timed && !widths.empty()) {
             double position = frame.position + (GetTickCount64() - frame.sampledAt) * frame.rate;
@@ -9946,6 +10009,7 @@ struct LyricsRegionState {
         }
         highlightClip.Rect({0, 0, (float)sungWidth, (float)(currentHeight + 2)});
         double overflow = widths.empty() ? 0 : std::max(0.0, widths.back() - width), offset = 0;
+        SetAnimationActive(timed ? frame.rate > 0 : overflow > 0);
         if (overflow > 0) {
             if (timed) offset = std::clamp(sungWidth - width * .65, 0.0, overflow);
             else {
@@ -9985,7 +10049,7 @@ static Canvas BuildLyricsRegion(HWND taskbar, ColumnDefinition const& column) {
             state->Render();
             if (state->timer) return;
             state->timer = DispatcherTimer();
-            state->timer.Interval(winrt::Windows::Foundation::TimeSpan{std::chrono::milliseconds(32)});
+            state->timer.Interval(winrt::Windows::Foundation::TimeSpan{std::chrono::milliseconds(200)});
             std::weak_ptr<LyricsRegionState> weak = state;
             state->token = state->timer.Tick([weak](auto const&, auto const&) {
                 if (auto live = weak.lock()) { try { live->Render(); } catch (...) {} }
@@ -10023,6 +10087,7 @@ static Grid BuildPlayerGrid(HWND taskbar) {
         if (g_settings.backgroundType == L"album_art_blur") {
             backgroundBorder.SizeChanged([](auto const&, SizeChangedEventArgs const& e) {
                 if (e.NewSize().Width > 0 && e.NewSize().Height > 0) {
+                    ++g_mediaRevision;
                     g_needsUiUpdate = true;
                     if (g_timerUpdateEvent) SetEvent(g_timerUpdateEvent);
                 }
@@ -10491,8 +10556,10 @@ static Grid BuildPlayerGrid(HWND taskbar) {
                     }
                     auto geo = winrt::Windows::UI::Xaml::Media::RectangleGeometry();
                     scrollView.Clip(geo);
-                    block.SizeChanged([scrollView, geo](winrt::Windows::Foundation::IInspectable const&, SizeChangedEventArgs const& e) mutable {
+                    block.SizeChanged([weakView = winrt::make_weak(scrollView), geo](winrt::Windows::Foundation::IInspectable const&, SizeChangedEventArgs const& e) mutable {
                         try {
+                            auto scrollView = weakView.get();
+                            if (!scrollView) return;
                             double h = e.NewSize().Height;
                             if (h < 1.0) h = 16.0;
                             double w = scrollView.Width();
@@ -11573,8 +11640,7 @@ static void RefreshPlayerContents() {
     if (!g_playerGrid || g_unloading || g_applyingSettings) return;
     std::wstring      title, artist;
     bool              isPlaying = false, hasMedia = false;
-    std::vector<BYTE> thumbBytes;
-    std::vector<BYTE> appIconBytes;
+    MediaBytes thumbnail, icon;
     uint64_t          thumbHash = 0;
     bool              canSkipPrevious = true, canSkipNext = true;
     bool              canShuffle = true, canRepeat = true, canSeek = true;
@@ -11584,15 +11650,17 @@ static void RefreshPlayerContents() {
         artist       = g_media.artist;
         isPlaying    = g_media.isPlaying;
         hasMedia     = g_media.hasMedia;
-        thumbBytes   = g_media.thumbnailBytes;
+        thumbnail    = g_media.thumbnailBytes;
         thumbHash    = g_media.thumbnailHash;
-        appIconBytes = g_media.appIconBytes;
+        icon          = g_media.appIconBytes;
         canSkipPrevious = g_media.canSkipPrevious;
         canSkipNext     = g_media.canSkipNext;
         canShuffle      = g_media.canShuffle;
         canRepeat       = g_media.canRepeat;
         canSeek         = g_media.canSeek;
     }
+    const auto& thumbBytes = *thumbnail;
+    const auto& appIconBytes = *icon;
     (void)hasMedia;
     bool hasSession = false;
     { std::lock_guard<std::mutex> lk(g_sessionMtx); hasSession = (g_currentSession != nullptr); }
@@ -12359,37 +12427,12 @@ static void UpdateVisibility() {
     bool hide = false;
     if (g_settings.hideFullscreen && IsFullscreenActive()) hide = true;
     if (!hide && g_hiddenByIdle) hide = true;
-    if (!hide) {
-        bool hasMedia = false, hasSession = false;
-        { std::lock_guard<std::mutex> lk(g_mediaMtx); hasMedia = g_media.hasMedia; }
-        { std::lock_guard<std::mutex> lk(g_sessionMtx); hasSession = (g_currentSession != nullptr); }
-        if (hasMedia || hasSession) {
-            g_lastMediaTime = std::chrono::steady_clock::now();
-        }
-
-
-        if (g_settings.hideWhenNoMedia && !g_miniPlayerFlyoutOpen) {
-            if (!hasSession) {
-                hide = true;
-            }
-            else if (!hasMedia) {
-                auto now = std::chrono::steady_clock::now();
-                auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - g_lastMediaTime).count();
-                if (elapsed > 2500) {
-                    hide = true;
-                } else {
-                    if (!g_unloading && g_timerUpdateEvent) SetEvent(g_timerUpdateEvent);
-                }
-            }
-        }
-    }
+    if (!g_miniPlayerFlyoutOpen && HideForNoMedia(g_primaryNoMediaDeadline)) hide = true;
     try {
         if (g_playerColumn == -1) {
-            if (hide) {
-                g_playerGrid.Visibility(Visibility::Collapsed);
-            } else {
-                g_playerGrid.Visibility(Visibility::Visible);
-            }
+            // DockLike observes opacity because a collapsed grid can retain its last layout width.
+            g_playerGrid.Opacity(hide ? 0.0 : 1.0);
+            g_playerGrid.Visibility(hide ? Visibility::Collapsed : Visibility::Visible);
         } else {
             bool isTrackingPosition = (g_settings.position == L"taskbar_left_start" ||
                                     g_settings.position == L"taskbar_right_start" ||
@@ -12521,7 +12564,10 @@ struct SecondaryMediaView {
     std::vector<SolidColorBrush> vizBrushes;
     winrt::Windows::UI::Xaml::DispatcherTimer frameTimer{nullptr};
     winrt::event_token frameToken{};
+    ULONGLONG noMediaDeadline = 0;
     bool lastLightTheme = false;
+    uint64_t renderedRevision = 0;
+    double renderedWidth = -1, renderedHeight = -1;
 };
 [[clang::no_destroy]] static std::list<SecondaryMediaView> g_secondaryMediaViews;
 
@@ -12767,8 +12813,7 @@ static void RefreshSecondaryContents(SecondaryMediaView& view) {
     if (!view.root || g_unloading || g_applyingSettings) return;
     std::wstring      title, artist;
     bool              isPlaying = false, hasMedia = false;
-    std::vector<BYTE> thumbBytes;
-    std::vector<BYTE> appIconBytes;
+    MediaBytes thumbnail, icon;
     uint64_t          thumbHash = 0;
     bool              canSkipPrevious = true, canSkipNext = true;
     bool              canShuffle = true, canRepeat = true, canSeek = true;
@@ -12778,15 +12823,17 @@ static void RefreshSecondaryContents(SecondaryMediaView& view) {
         artist       = g_media.artist;
         isPlaying    = g_media.isPlaying;
         hasMedia     = g_media.hasMedia;
-        thumbBytes   = g_media.thumbnailBytes;
+        thumbnail    = g_media.thumbnailBytes;
         thumbHash    = g_media.thumbnailHash;
-        appIconBytes = g_media.appIconBytes;
+        icon          = g_media.appIconBytes;
         canSkipPrevious = g_media.canSkipPrevious;
         canSkipNext     = g_media.canSkipNext;
         canShuffle      = g_media.canShuffle;
         canRepeat       = g_media.canRepeat;
         canSeek         = g_media.canSeek;
     }
+    const auto& thumbBytes = *thumbnail;
+    const auto& appIconBytes = *icon;
     (void)hasMedia;
     bool hasSession = false;
     { std::lock_guard<std::mutex> lk(g_sessionMtx); hasSession = (g_currentSession != nullptr); }
@@ -13540,13 +13587,10 @@ static void UpdateSecondaryVisibility(SecondaryMediaView& view) {
     if (!view.root) return;
     bool hide = g_hiddenByIdle;
     if (g_settings.hideFullscreen && IsFullscreenActive()) hide = true;
-    bool hasMedia = false, hasSession = false;
-    { std::lock_guard<std::mutex> lock(g_mediaMtx); hasMedia = g_media.hasMedia; }
-    { std::lock_guard<std::mutex> lock(g_sessionMtx); hasSession = g_currentSession != nullptr; }
-    if (g_settings.hideWhenNoMedia && !hasSession && !hasMedia) hide = true;
+    if (HideForNoMedia(view.noMediaDeadline)) hide = true;
     try {
-        view.root.Visibility(hide ? Visibility::Collapsed : Visibility::Visible);
         view.root.Opacity(hide ? 0 : 1);
+        view.root.Visibility(hide ? Visibility::Collapsed : Visibility::Visible);
     } catch (...) {}
 }
 static void SecondaryFrameTick(HWND hwnd) {
@@ -13605,8 +13649,10 @@ static void RefreshSecondaryMediaViewOnThread(HWND hwnd) {
     if (g_unloading || g_applyingSettings) return;
     auto* view = FindSecondaryMediaView(hwnd);
     if (!view) return;
-    if (view->lastLightTheme != IsSystemLightTheme()) {
-        view->lastLightTheme = IsSystemLightTheme();
+    const bool light = IsSystemLightTheme();
+    if (view->lastLightTheme != light) {
+        view->lastLightTheme = light;
+        view->renderedRevision = 0;
         // The XAML style and hover brushes are owned by the UI thread that
         // created this view. Restore the primary globals immediately afterward.
         std::swap(g_fluentMediaButtonStyle, view->buttonStyle);
@@ -13626,7 +13672,14 @@ static void RefreshSecondaryMediaViewOnThread(HWND hwnd) {
         std::swap(g_fluentMediaButtonStyle, view->buttonStyle);
     }
     try {
-        RefreshSecondaryContents(*view);
+        const auto revision = g_mediaRevision.load();
+        const double width = view->root.ActualWidth(), height = view->root.ActualHeight();
+        if (revision != view->renderedRevision || width != view->renderedWidth || height != view->renderedHeight) {
+            RefreshSecondaryContents(*view);
+            view->renderedRevision = revision;
+            view->renderedWidth = width;
+            view->renderedHeight = height;
+        }
         UpdateSecondaryVisibility(*view);
         AlignSecondaryMediaView(*view);
     } catch (...) { Wh_Log(L"Mirror: secondary refresh failed"); }

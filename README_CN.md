@@ -51,12 +51,13 @@ lyrics7：网易云原生 SMTC 缺少时间轴时，使用只读客户端播放�
 
 ```text
 ActualWidth=>LyricsPlayerWidth
+Opacity=>LyricsPlayerOpacity
 ```
 
 **任务栏背景**，目标为 `Taskbar.TaskbarFrame > Grid#RootGrid > Taskbar.TaskbarBackground > Grid`。
 
 ```text
-Margin={{($TrayInFrame?$DockOffset:-6)-(LyricsPlayerWidth==``?0:LyricsPlayerWidth+12)}},{{$TrayInFrame?$DockTopGap:0}},{{$TrayInFrame?max(TrayInFrameWidth-6-$DockOffset,0):-6}},{{$TrayInFrame?$DockBottomGap:0}}
+Margin={{($TrayInFrame?$DockOffset:-6)-(LyricsPlayerOpacity==0?0:LyricsPlayerWidth==``?0:LyricsPlayerWidth==0?0:LyricsPlayerWidth+12)}},{{$TrayInFrame?$DockTopGap:0}},{{$TrayInFrame?max(TrayInFrameWidth-6-$DockOffset,0):-6}},{{$TrayInFrame?$DockBottomGap:0}}
 ```
 
 这条规则根据播放器实际宽度向左延伸 DockLike 背景，让播放器处于可见、可点击的区域，同时保留其余空白区域的点击穿透。
