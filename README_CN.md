@@ -42,6 +42,25 @@ lyrics7：网易云原生 SMTC 缺少时间轴时，使用只读客户端播放�
 
 模组会定期发现副屏任务栏。各实例拥有独立的界面和渲染生命周期，共享媒体状态与设置；歌词按各自任务栏高度和 DPI 布局。**Mirror layout（镜像布局）**只是反转元素顺序，与多显示器镜像是两个不同选项。
 
+
+### DockLike 主题下在天气小组件左侧显示播放器
+
+播放器位置选择 `taskbar_after_widgets_left`。在 **Windows 11 Taskbar Styler** 中选择 DockLike，开启「空白区域点击穿透」。在自定义控件样式中添加以下两条规则。如果已有相同目标，将样式追加到对应目标下即可。
+
+**播放器容器**，目标为 `Grid#FluentMediaBar`。
+
+```text
+ActualWidth=>LyricsPlayerWidth
+```
+
+**任务栏背景**，目标为 `Taskbar.TaskbarFrame > Grid#RootGrid > Taskbar.TaskbarBackground > Grid`。
+
+```text
+Margin={{($TrayInFrame?$DockOffset:-6)-(LyricsPlayerWidth==``?0:LyricsPlayerWidth+12)}},{{$TrayInFrame?$DockTopGap:0}},{{$TrayInFrame?max(TrayInFrameWidth-6-$DockOffset,0):-6}},{{$TrayInFrame?$DockBottomGap:0}}
+```
+
+这条规则根据播放器实际宽度向左延伸 DockLike 背景，让播放器处于可见、可点击的区域，同时保留其余空白区域的点击穿透。
+
 ## 3. 安装与更新
 
 需要 **Windows 11**、Windhawk，以及此模组针对的标准任务栏实现。尚未验证 Windows 10、替代任务栏及所有 Windows 构建版本。

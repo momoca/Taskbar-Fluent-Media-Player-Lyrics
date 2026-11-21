@@ -2384,7 +2384,7 @@ static void ShowSuccessNotification() {
 static Thickness g_trackedElementOriginalMargin{};
 static bool g_hasTrackedElementOriginalMargin = false;
 static std::wstring g_trackPosition = L"";
-static winrt::event_token g_layoutUpdateToken{};
+[[clang::no_destroy]] static std::function<void()> g_updatePrimaryAnchor;
 using CTaskBand_GetTaskbarHost_t  = void*(WINAPI*)(void*, void*);
 using CSecondaryTaskBand_GetTaskbarHost_t = void*(WINAPI*)(void*, void*);
 using TaskbarHost_FrameHeight_t   = int  (WINAPI*)(void*);
@@ -6494,26 +6494,28 @@ static DWORD WINAPI TimerThreadProc(void*) {
             nextMountCheck = now + kMountCheckIntervalMs;
         }
         // Secondary UI is refreshed by its primary-dispatcher timer.
-        if (needsUpdate || checkMount) {
+        if (needsUpdate || checkMount || wait == WAIT_TIMEOUT) {
             struct TaskbarUpdate {
                 HWND hwnd;
                 bool refresh;
-            } update{hWnd, needsUpdate};
+                bool checkMount;
+            } update{hWnd, needsUpdate, checkMount};
             RunFromWindowThread(hWnd, [](void* param) {
                 const auto& update = *static_cast<TaskbarUpdate*>(param);
                 if (g_unloading || g_applyingSettings || g_taskbarWnd != update.hwnd) return;
                 // Explorer can replace the XAML tree while the old grid is still referenced.
-                if (g_playerGrid && !g_playerGrid.XamlRoot()) {
+                if (update.checkMount && g_playerGrid && !g_playerGrid.XamlRoot()) {
                     Wh_Log(L"Primary taskbar player detached from XAML; remounting on %p", update.hwnd);
                     RemovePlayerGrid();
                 }
-                if (!g_playerGrid) {
+                if (update.checkMount && !g_playerGrid) {
                     TryMountPlayerOnTaskbar();
                 }
                 if (g_playerGrid && update.refresh) {
                     RefreshPlayerContents();
                     UpdateVisibility();
                 }
+                if (g_updatePrimaryAnchor) g_updatePrimaryAnchor();
             }, &update);
         }
     }
@@ -10018,6 +10020,14 @@ static Grid BuildPlayerGrid(HWND taskbar) {
         backgroundBorder.HorizontalAlignment(HorizontalAlignment::Stretch);
         backgroundBorder.VerticalAlignment(VerticalAlignment::Stretch);
         backgroundBorder.IsHitTestVisible(false);
+        if (g_settings.backgroundType == L"album_art_blur") {
+            backgroundBorder.SizeChanged([](auto const&, SizeChangedEventArgs const& e) {
+                if (e.NewSize().Width > 0 && e.NewSize().Height > 0) {
+                    g_needsUiUpdate = true;
+                    if (g_timerUpdateEvent) SetEvent(g_timerUpdateEvent);
+                }
+            });
+        }
         backgroundBorder.Visibility(Visibility::Collapsed);
         if (phMin > 0) {
             backgroundBorder.MinHeight(phMin);
@@ -10898,7 +10908,7 @@ static Grid BuildPlayerGrid(HWND taskbar) {
     }
 }
 struct InjectionTarget {
-    Grid grid;
+    Grid grid{nullptr};
     int  insertCol = 0;
 };
 static int RemovePlayerGridChildren(Grid const& targetGrid) {
@@ -10965,19 +10975,22 @@ static const wchar_t* const kStartButtonNames[] = {
     L"StartMenuLaunchButton", 
     L"LaunchListButton",
 };
-static Grid FindTaskbarRootGrid(FrameworkElement const& root) {
-    FrameworkElement taskbarFrame = nullptr;
-    int count = VisualTreeHelper::GetChildrenCount(root);
-    for (int i = 0; i < count; i++) {
-        auto c = VisualTreeHelper::GetChild(root, i).try_as<FrameworkElement>();
-        if (c) {
-            auto className = winrt::get_class_name(c);
-            if (className == L"Taskbar.TaskbarFrame") {
-                taskbarFrame = c;
-                break;
-            }
-        }
+static FrameworkElement FindChildByClassName(FrameworkElement const& parent, const wchar_t* className, int depth = 32) {
+    if (!parent || depth <= 0) return nullptr;
+    int childCount = VisualTreeHelper::GetChildrenCount(parent);
+    for (int i = 0; i < childCount; i++) {
+        auto child = VisualTreeHelper::GetChild(parent, i).try_as<FrameworkElement>();
+        if (!child) continue;
+        if (winrt::get_class_name(child) == className) return child;
+        if (auto found = FindChildByClassName(child, className, depth - 1)) return found;
     }
+    return nullptr;
+}
+static Grid FindTaskbarRootGrid(FrameworkElement const& root) {
+    if (!root) return nullptr;
+    if (root.Name() == L"RootGrid") return root.try_as<Grid>();
+    auto taskbarFrame = winrt::get_class_name(root) == L"Taskbar.TaskbarFrame"
+        ? root : FindChildByClassName(root, L"Taskbar.TaskbarFrame");
     if (!taskbarFrame) {
         return nullptr;
     }
@@ -11031,17 +11044,6 @@ static FrameworkElement FindNthElementByClassName(FrameworkElement const& parent
             if (foundCount == index) return child;
             foundCount++;
         }
-    }
-    return nullptr;
-}
-static FrameworkElement FindChildByClassName(FrameworkElement const& parent, const wchar_t* className, int depth = 32) {
-    if (!parent || depth <= 0) return nullptr;
-    int childCount = VisualTreeHelper::GetChildrenCount(parent);
-    for (int i = 0; i < childCount; i++) {
-        auto child = VisualTreeHelper::GetChild(parent, i).try_as<FrameworkElement>();
-        if (!child) continue;
-        if (winrt::get_class_name(child) == className) return child;
-        if (auto found = FindChildByClassName(child, className, depth - 1)) return found;
     }
     return nullptr;
 }
@@ -11336,71 +11338,70 @@ static bool InjectPlayerGrid() {
                             g_settings.position == L"taskbar_after_taskview_right")) {
                             startButtonOffset = GetStartButtonAdjustment(root);
                         }
-                        g_layoutUpdateToken = targetGrid.LayoutUpdated(
-                            [targetGrid, startButtonModActiveMod, startButtonOffset](winrt::Windows::Foundation::IInspectable const&, winrt::Windows::Foundation::IInspectable const&) {
-                                try {
-                                    if (!g_playerGrid || !g_trackedElement || g_unloading) return;
-                                    UpdateAnchorDebugOverlay(targetGrid, g_trackedElement);
-                                    bool isVisible = (g_playerGrid.Visibility() == Visibility::Visible);
-                                    double w = isVisible ? g_playerGrid.ActualWidth() : 0.0;
-                                    double desiredGap = isVisible ? (w + g_settings.playerMarginLeft + g_settings.playerMarginRight) : 0.0;
-                                    auto m = g_hasTrackedElementOriginalMargin ? g_trackedElementOriginalMargin : g_trackedElement.Margin();
-                                    auto currentMargin = g_trackedElement.Margin();
-                                    bool changedMargin = false;
-                                    if (g_trackPosition == L"far_left") {
-                                        try {
-                                            double originalLeft = g_hasTrackedElementOriginalMargin ? g_trackedElementOriginalMargin.Left : 0.0;
-                                            double currentLeftmost = FindLeftmostVisibleChildX(g_trackedElement, targetGrid, 4);
-                                            double naturalLeft = currentLeftmost >= 0.0
-                                                ? currentLeftmost - (currentMargin.Left - originalLeft)
-                                                : desiredGap;
-                                            double requiredExtra = std::max(0.0, desiredGap - naturalLeft);
-                                            double targetLeft = originalLeft + requiredExtra;
-                                            if (std::abs(currentMargin.Left - targetLeft) > 1.0 ||
-                                                std::abs(currentMargin.Right - m.Right) > 1.0) {
-                                                m.Left = targetLeft;
-                                                changedMargin = true;
-                                            }
-                                        } catch (...) {
-                                            if (g_hasTrackedElementOriginalMargin &&
-                                                (std::abs(currentMargin.Left - m.Left) > 1.0 ||
-                                                std::abs(currentMargin.Right - m.Right) > 1.0)) {
-                                                changedMargin = true;
-                                            }
+                        // Change margins after XAML finishes its layout pass.
+                        g_updatePrimaryAnchor = [targetGrid, startButtonModActiveMod, startButtonOffset]() {
+                            try {
+                                if (!g_playerGrid || !g_trackedElement || g_unloading) return;
+                                UpdateAnchorDebugOverlay(targetGrid, g_trackedElement);
+                                bool isVisible = (g_playerGrid.Visibility() == Visibility::Visible);
+                                double w = isVisible ? g_playerGrid.ActualWidth() : 0.0;
+                                double desiredGap = isVisible ? (w + g_settings.playerMarginLeft + g_settings.playerMarginRight) : 0.0;
+                                auto m = g_hasTrackedElementOriginalMargin ? g_trackedElementOriginalMargin : g_trackedElement.Margin();
+                                auto currentMargin = g_trackedElement.Margin();
+                                bool changedMargin = false;
+                                if (g_trackPosition == L"far_left") {
+                                    try {
+                                        double originalLeft = g_hasTrackedElementOriginalMargin ? g_trackedElementOriginalMargin.Left : 0.0;
+                                        double currentLeftmost = FindLeftmostVisibleChildX(g_trackedElement, targetGrid, 4);
+                                        double naturalLeft = currentLeftmost >= 0.0
+                                            ? currentLeftmost - (currentMargin.Left - originalLeft)
+                                            : desiredGap;
+                                        double requiredExtra = std::max(0.0, desiredGap - naturalLeft);
+                                        double targetLeft = originalLeft + requiredExtra;
+                                        if (std::abs(currentMargin.Left - targetLeft) > 1.0 ||
+                                            std::abs(currentMargin.Right - m.Right) > 1.0) {
+                                            m.Left = targetLeft;
+                                            changedMargin = true;
                                         }
-                                    } else if (g_trackPosition == L"left") {
-                                        if (std::abs(currentMargin.Left - desiredGap) > 1.0) { m.Left = desiredGap; changedMargin = true; }
-                                    } else {
-                                        if (std::abs(currentMargin.Right - desiredGap) > 1.0) { m.Right = desiredGap; changedMargin = true; }
+                                    } catch (...) {
+                                        if (g_hasTrackedElementOriginalMargin &&
+                                            (std::abs(currentMargin.Left - m.Left) > 1.0 ||
+                                            std::abs(currentMargin.Right - m.Right) > 1.0)) {
+                                            changedMargin = true;
+                                        }
                                     }
-                                    if (changedMargin) g_trackedElement.Margin(m);
-                                    if (isVisible) {
-                                        try {
-                                            auto transform = g_trackedElement.TransformToVisual(targetGrid);
-                                            auto point = transform.TransformPoint({0, 0});
-                                            double leftPos = point.X;
-                                            if (g_trackPosition == L"far_left") {
-                                                leftPos = g_settings.playerMarginLeft;
-                                            } else if (g_trackPosition == L"left") {
-                                                leftPos = point.X - desiredGap + g_settings.playerMarginLeft;
-                                                if (startButtonModActiveMod && startButtonOffset > 0) {
-                                                    leftPos += startButtonOffset;
-                                                }
-                                            } else {
-                                                leftPos = point.X + g_trackedElement.ActualWidth() + g_settings.playerMarginLeft;
-                                            }
-                                            auto pm = g_playerGrid.Margin();
-                                            if (std::abs(pm.Left - leftPos) > 1.0) {
-                                                g_playerGrid.Margin({leftPos, 0, 0, 0});
-                                            }
-                                        } catch (...) {}
-                                    }
-                                } catch (...) {
-                                    g_trackedElement = nullptr;
-                                    g_hasTrackedElementOriginalMargin = false;
+                                } else if (g_trackPosition == L"left") {
+                                    if (std::abs(currentMargin.Left - desiredGap) > 1.0) { m.Left = desiredGap; changedMargin = true; }
+                                } else {
+                                    if (std::abs(currentMargin.Right - desiredGap) > 1.0) { m.Right = desiredGap; changedMargin = true; }
                                 }
+                                if (changedMargin) g_trackedElement.Margin(m);
+                                if (isVisible) {
+                                    try {
+                                        auto transform = g_trackedElement.TransformToVisual(targetGrid);
+                                        auto point = transform.TransformPoint({0, 0});
+                                        double leftPos = point.X;
+                                        if (g_trackPosition == L"far_left") {
+                                            leftPos = g_settings.playerMarginLeft;
+                                        } else if (g_trackPosition == L"left") {
+                                            leftPos = point.X - desiredGap + g_settings.playerMarginLeft;
+                                            if (startButtonModActiveMod && startButtonOffset > 0) {
+                                                leftPos += startButtonOffset;
+                                            }
+                                        } else {
+                                            leftPos = point.X + g_trackedElement.ActualWidth() + g_settings.playerMarginLeft;
+                                        }
+                                        auto pm = g_playerGrid.Margin();
+                                        if (std::abs(pm.Left - leftPos) > 1.0) {
+                                            g_playerGrid.Margin({leftPos, 0, 0, 0});
+                                        }
+                                    } catch (...) {}
+                                }
+                            } catch (...) {
+                                g_trackedElement = nullptr;
+                                g_hasTrackedElementOriginalMargin = false;
                             }
-                        );
+                        };
                     } else {
                         playerGrid.Margin({leftMargin, 0, rightMargin, 0});
                     }
@@ -11475,14 +11476,7 @@ static void RemovePlayerGrid() {
         g_miniPlayerFlyoutOpen = false;
     } catch (...) {}
     try {
-        if (g_layoutUpdateToken.value) {
-            auto targetGrid = g_injectionParent.try_as<Grid>();
-            if (targetGrid) {
-                try { targetGrid.LayoutUpdated(g_layoutUpdateToken); } catch (...) {}
-            }
-            g_layoutUpdateToken = {};
-        }
-        
+        g_updatePrimaryAnchor = {};
         if (g_trackedElement) {
             try {
                 if (g_hasTrackedElementOriginalMargin) {
@@ -12098,29 +12092,18 @@ static void RefreshPlayerContents() {
                         auto& bgType = g_settings.backgroundType;
                         if (bgType == L"album_art_blur") {
                             try {
-                                g_blurBgCache.Invalidate();
                                 bgBorder.Visibility(Visibility::Visible);
                                 bgBorder.Opacity(g_settings.blurOpacity / 100.0);
-                                auto applyBlur = [bgBorder, thumbBytesSnap = thumbBytes]() {
-                                    try {
-                                        int w = (int)bgBorder.ActualWidth();
-                                        int h = (int)bgBorder.ActualHeight();
-                                        if (w <= 0 || h <= 0) return;
-                                        g_blurBgCache.Invalidate();
-                                        bgBorder.Background(MakeAlbumBlurBrush(thumbBytesSnap, w, h));
-                                        bgBorder.Opacity(g_settings.blurOpacity / 100.0);
-                                        bgBorder.Visibility(Visibility::Visible);
-                                    } catch (...) {}
-                                };
-                                if (bgBorder.ActualWidth() > 0 && bgBorder.ActualHeight() > 0) {
-                                    applyBlur();
-                                } else {
-                                    auto tokenHolder = std::make_shared<winrt::event_token>();
-                                    *tokenHolder = bgBorder.SizeChanged(
-                                        [applyBlur, bgBorder, tokenHolder](auto const&, auto const&) mutable {
-                                            applyBlur();
-                                            try { bgBorder.SizeChanged(*tokenHolder); } catch (...) {}
-                                        });
+                                int w = static_cast<int>(bgBorder.ActualWidth());
+                                int h = static_cast<int>(bgBorder.ActualHeight());
+                                auto brush = bgBorder.Background().try_as<ImageBrush>();
+                                auto bitmap = brush ? brush.ImageSource().try_as<WriteableBitmap>() : nullptr;
+                                if (!isSameAlbum) g_blurBgCache.Invalidate();
+                                if (w > 0 && h > 0) {
+                                    if (!isSameAlbum || !bitmap || bitmap.PixelWidth() != w || bitmap.PixelHeight() != h)
+                                        bgBorder.Background(MakeAlbumBlurBrush(thumbBytes, w, h));
+                                } else if (!isSameAlbum) {
+                                    bgBorder.Background(nullptr);
                                 }
                             } catch (...) {}
                         } else if (bgType == L"solid" || bgType == L"gradient" || bgType == L"acrylic" || bgType == L"mica" || bgType == L"mica_alt") {
@@ -12517,7 +12500,6 @@ struct SecondaryMediaView {
     bool anchorOnLeft = true;
     bool usingFallbackAnchor = false;
     bool rightEdgeNeedsTrayClearance = false;
-    winrt::event_token anchorLayoutToken{};
     ToolTip tooltip{nullptr};
     std::function<void()> buttonUpdater;
     Style buttonStyle{nullptr};
@@ -13304,29 +13286,18 @@ static void RefreshSecondaryContents(SecondaryMediaView& view) {
                         auto& bgType = g_settings.backgroundType;
                         if (bgType == L"album_art_blur") {
                             try {
-                                g_blurBgCache.Invalidate();
                                 bgBorder.Visibility(Visibility::Visible);
                                 bgBorder.Opacity(g_settings.blurOpacity / 100.0);
-                                auto applyBlur = [bgBorder, thumbBytesSnap = thumbBytes]() {
-                                    try {
-                                        int w = (int)bgBorder.ActualWidth();
-                                        int h = (int)bgBorder.ActualHeight();
-                                        if (w <= 0 || h <= 0) return;
-                                        g_blurBgCache.Invalidate();
-                                        bgBorder.Background(MakeAlbumBlurBrush(thumbBytesSnap, w, h));
-                                        bgBorder.Opacity(g_settings.blurOpacity / 100.0);
-                                        bgBorder.Visibility(Visibility::Visible);
-                                    } catch (...) {}
-                                };
-                                if (bgBorder.ActualWidth() > 0 && bgBorder.ActualHeight() > 0) {
-                                    applyBlur();
-                                } else {
-                                    auto tokenHolder = std::make_shared<winrt::event_token>();
-                                    *tokenHolder = bgBorder.SizeChanged(
-                                        [applyBlur, bgBorder, tokenHolder](auto const&, auto const&) mutable {
-                                            applyBlur();
-                                            try { bgBorder.SizeChanged(*tokenHolder); } catch (...) {}
-                                        });
+                                int w = static_cast<int>(bgBorder.ActualWidth());
+                                int h = static_cast<int>(bgBorder.ActualHeight());
+                                auto brush = bgBorder.Background().try_as<ImageBrush>();
+                                auto bitmap = brush ? brush.ImageSource().try_as<WriteableBitmap>() : nullptr;
+                                if (!isSameAlbum) g_blurBgCache.Invalidate();
+                                if (w > 0 && h > 0) {
+                                    if (!isSameAlbum || !bitmap || bitmap.PixelWidth() != w || bitmap.PixelHeight() != h)
+                                        bgBorder.Background(MakeAlbumBlurBrush(thumbBytes, w, h));
+                                } else if (!isSameAlbum) {
+                                    bgBorder.Background(nullptr);
                                 }
                             } catch (...) {}
                         } else if (bgType == L"solid" || bgType == L"gradient" || bgType == L"acrylic" || bgType == L"mica" || bgType == L"mica_alt") {
@@ -13603,10 +13574,6 @@ static void RemoveSecondaryMediaViewOnThread(HWND hwnd) {
                 it->frameTimer.Tick(it->frameToken);
                 it->frameTimer = nullptr;
             }
-            if (it->target && it->anchorLayoutToken.value) {
-                it->target.LayoutUpdated(it->anchorLayoutToken);
-                it->anchorLayoutToken = {};
-            }
             if (it->anchorElement) {
                 // Restore the original taskbar margin for every tracked button.
                 try { it->anchorElement.Margin(it->anchorOriginalMargin); } catch (...) {}
@@ -13633,6 +13600,7 @@ static void RemoveSecondaryMediaViewOnThread(HWND hwnd) {
         it = g_secondaryMediaViews.erase(it);
     }
 }
+static void AlignSecondaryMediaView(SecondaryMediaView& view);
 static void RefreshSecondaryMediaViewOnThread(HWND hwnd) {
     if (g_unloading || g_applyingSettings) return;
     auto* view = FindSecondaryMediaView(hwnd);
@@ -13660,6 +13628,7 @@ static void RefreshSecondaryMediaViewOnThread(HWND hwnd) {
     try {
         RefreshSecondaryContents(*view);
         UpdateSecondaryVisibility(*view);
+        AlignSecondaryMediaView(*view);
     } catch (...) { Wh_Log(L"Mirror: secondary refresh failed"); }
 }
 // On secondary taskbars the Widgets (AugmentedEntryPointButton) is normally
@@ -13749,7 +13718,7 @@ static void AlignSecondaryMediaView(SecondaryMediaView& view) {
     if (!view.root || !view.target || g_unloading) return;
     try {
         // The right-edge overlay must avoid the tray, just like the original
-        // single-screen implementation. Do this on LayoutUpdated because
+        // single-screen implementation. Recheck on refresh because
         // the tray width can be zero until the secondary XAML tree is ready.
         if (view.rightEdgeNeedsTrayClearance) {
             double right = (double)g_settings.playerMarginRight -
@@ -13916,14 +13885,6 @@ static void CreateSecondaryMediaViewOnThread(HWND hwnd) {
         Canvas::SetZIndex(mirrorRoot, 1000);
         target.Children().Append(mirrorRoot);
         if (view.anchorElement || view.rightEdgeNeedsTrayClearance) {
-            // No raw view pointer is captured: the HWND is resolved against the
-            // live registry on every XAML layout pass.
-            view.anchorLayoutToken = target.LayoutUpdated(
-                [hwnd](auto const&, auto const&) {
-                    if (auto* currentView = FindSecondaryMediaView(hwnd))
-                        AlignSecondaryMediaView(*currentView);
-                });
-            AlignSecondaryMediaView(view);
             Wh_Log(L"Mirror: positioned on %p, anchor=%d, fallback=%d, tray-clearance=%d", hwnd,
                    view.anchorElement ? 1 : 0, view.usingFallbackAnchor ? 1 : 0,
                    view.rightEdgeNeedsTrayClearance ? 1 : 0);
@@ -14046,7 +14007,7 @@ static void WINAPI TrayUI_StartTaskbar_Hook(void* pThis) {
     g_trackedElement  = nullptr;
     g_hasTrackedElementOriginalMargin = false;
     g_trackPosition   = L"";
-    g_layoutUpdateToken = {};
+    g_updatePrimaryAnchor = {};
     g_taskbarWnd = hWnd;
     g_cachedAlbumTitle.clear();
     g_cachedAlbumArtist.clear();
